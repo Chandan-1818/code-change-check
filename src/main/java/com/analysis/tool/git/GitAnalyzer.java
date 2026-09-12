@@ -3,16 +3,20 @@ package com.analysis.tool.git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +27,7 @@ import java.util.List;
  * Supported operations (current scope):
  * - Reading the current branch name
  * - Listing file paths changed between two revisions (file-level diff)
+ * - Reading a file's content as it existed at a specific revision
  *
  * Not yet supported (future phases):
  * - Class/method-level change detection (requires JavaParser integration)
@@ -88,6 +93,43 @@ public class GitAnalyzer {
         }
 
         return changedFiles;
+    }
+
+    /**
+     * Reads the content of a file as it existed at the given revision.
+     *
+     * @param revision a commit-ish reference (e.g. "HEAD", "HEAD~1", or a commit hash)
+     * @param filePath the path to the file relative to the repository root
+     *                 (e.g. "src/main/java/com/sample/Calculator.java")
+     * @return the file's content as a UTF-8 string
+     * @throws IOException if the revision cannot be resolved or the file
+     *                      does not exist at that revision
+     */
+    public String getFileContentAtRevision(String revision, String filePath) throws IOException {
+        ObjectId commitId = repository.resolve(revision);
+        if (commitId == null) {
+            throw new IOException("Could not resolve revision: " + revision);
+        }
+
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit commit = revWalk.parseCommit(commitId);
+
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(commit.getTree());
+                treeWalk.setRecursive(true);
+                treeWalk.setFilter(PathFilter.create(filePath));
+
+                if (!treeWalk.next()) {
+                    throw new IOException("File not found at revision " + revision + ": " + filePath);
+                }
+
+                ObjectId blobId = treeWalk.getObjectId(0);
+                ObjectLoader loader = repository.open(blobId);
+                byte[] bytes = loader.getBytes();
+
+                return new String(bytes, StandardCharsets.UTF_8);
+            }
+        }
     }
 
     public void close() {

@@ -6,11 +6,15 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class GitAnalyzerTest {
 
     private static final String SAMPLE_PROJECT_PATH =
             "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+
+    private static final String CALCULATOR_PATH =
+            "src/main/java/com/sample/Calculator.java";
 
     @Test
     public void shouldOpenSampleProjectAndReadBranch() throws Exception {
@@ -29,7 +33,33 @@ public class GitAnalyzerTest {
 
         assertEquals(1, changedFiles.size(),
                 "Expected exactly one changed file between Version 1 and Version 2");
-        assertTrue(changedFiles.contains("src/main/java/com/sample/Calculator.java"),
+        assertTrue(changedFiles.contains(CALCULATOR_PATH),
                 "Expected Calculator.java to be the changed file");
+    }
+
+    @Test
+    public void shouldReadDifferentFileContentAtDifferentRevisions() throws Exception {
+        GitAnalyzer analyzer = new GitAnalyzer(SAMPLE_PROJECT_PATH);
+
+        String oldContent = analyzer.getFileContentAtRevision("HEAD~1", CALCULATOR_PATH);
+        String newContent = analyzer.getFileContentAtRevision("HEAD", CALCULATOR_PATH);
+
+        analyzer.close();
+
+        // Version 1 (HEAD~1) returned directly, no intermediate variable
+        assertTrue(oldContent.contains("return a - b;"),
+                "Expected Version 1 to return 'a - b' directly");
+        assertFalse(oldContent.contains("int result"),
+                "Expected Version 1 to NOT contain an intermediate 'result' variable");
+
+        // Version 2 (HEAD) uses an intermediate variable
+        assertTrue(newContent.contains("int result = a - b;"),
+                "Expected Version 2 to declare an intermediate 'result' variable");
+        assertTrue(newContent.contains("return result;"),
+                "Expected Version 2 to return the 'result' variable");
+
+        // The two versions must genuinely differ
+        assertFalse(oldContent.equals(newContent),
+                "Expected file content to differ between the two revisions");
     }
 }
