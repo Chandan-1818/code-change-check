@@ -13,6 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * of the sample project, ChangeImpactAnalyzer correctly identifies exactly
  * which test methods need to be re-run, using real Git history, real AST
  * parsing, and real method-call detection at every stage.
+ *
+ * Includes both a positive case (a method was actually modified) and a
+ * negative case (no change at all) to prove the selector is not trivially
+ * always returning a non-empty result.
  */
 public class ChangeImpactAnalyzerIntegrationTest {
 
@@ -42,5 +46,20 @@ public class ChangeImpactAnalyzerIntegrationTest {
                 "Expected testAdd NOT to be selected since add() was unchanged");
         assertEquals(1, impactedTests.size(),
                 "Expected exactly one impacted test for this commit range");
+    }
+
+    @Test
+    public void shouldSelectNoTestsWhenComparingRevisionToItself() throws Exception {
+        ChangeImpactAnalyzer analyzer = new ChangeImpactAnalyzer();
+
+        Set<String> impactedTests = analyzer.findImpactedTests(
+                SAMPLE_PROJECT_PATH,
+                "HEAD",
+                "HEAD",
+                CALCULATOR_PATH,
+                CALCULATOR_TEST_PATH);
+
+        assertTrue(impactedTests.isEmpty(),
+                "Expected no impacted tests when comparing a revision to itself (no code change)");
     }
 }
