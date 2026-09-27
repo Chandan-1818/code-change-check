@@ -10,4 +10,9 @@ public class Calculator {
         int result = a - b;
         return result;
     }
+
+    public int compute(int a, int b) {
+        Multiplier multiplier = new Multiplier();
+        return multiplier.multiply(a, b);
+    }
 }

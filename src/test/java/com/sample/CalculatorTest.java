@@ -16,4 +16,10 @@ public class CalculatorTest {
         Calculator calculator = new Calculator();
         assertEquals(1, calculator.subtract(3, 2));
     }
+
+    @Test
+    public void testCompute() {
+        Calculator calculator = new Calculator();
+        assertEquals(6, calculator.compute(2, 3));
+    }
 }
