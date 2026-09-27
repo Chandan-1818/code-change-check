@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * Supports both forward lookup (what does this method call?) and
  * reverse lookup (what calls this method?) - the latter is required
- * for reverse-BFS transitive impact analysis (a future phase).
+ * for reverse-BFS transitive impact analysis.
  */
 public class DependencyGraph {
 
@@ -35,11 +35,33 @@ public class DependencyGraph {
     }
 
     /**
-     * Returns the set of methods that directly call the given method.
+     * Returns the set of methods that directly call the given method,
+     * matched by exact MethodNode (class + method name).
      * Returns an empty set if no recorded method calls it.
      */
     public Set<MethodNode> getCallers(MethodNode method) {
         return callers.getOrDefault(method, new HashSet<>());
+    }
+
+    /**
+     * Returns the set of methods that directly call ANY node whose method
+     * name matches the given name, regardless of class.
+     *
+     * This exists because callee class names are frequently recorded as
+     * "UNKNOWN" (no Symbol Solver configured), so a real method's node
+     * (e.g. Calculator.compute) and its unresolved callee reference
+     * (e.g. UNKNOWN.compute, recorded by a caller elsewhere) are
+     * different MethodNode instances even though they refer to the same
+     * method. This method bridges that gap for multi-hop traversal.
+     */
+    public Set<MethodNode> getCallersByMethodName(String methodName) {
+        Set<MethodNode> result = new HashSet<>();
+        for (MethodNode node : getAllNodes()) {
+            if (node.getMethodName().equals(methodName)) {
+                result.addAll(getCallers(node));
+            }
+        }
+        return result;
     }
 
     /**

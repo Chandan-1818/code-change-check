@@ -14,10 +14,13 @@ import java.util.Set;
  * Performs reverse BFS over a DependencyGraph to find every method
  * impacted, directly or transitively, by a set of changed method names.
  *
- * Matches changed method names against graph nodes by method name only
- * (not by MethodNode equality, which includes class name), because the
- * graph's callee class names are currently recorded as "UNKNOWN" pending
- * Symbol Solver integration (see DependencyGraphBuilder).
+ * Matches by method name only (not by exact MethodNode equality) at
+ * EVERY level of the traversal, not just when seeding, because callee
+ * class names are frequently recorded as "UNKNOWN" (no Symbol Solver
+ * configured). Without name-based matching at every hop, a node like
+ * UNKNOWN.compute (an unresolved callee reference) and the real
+ * Calculator.compute node would be treated as unrelated, silently
+ * truncating multi-hop chains at the first unresolved boundary.
  *
  * Cycle-safe: a visited-set prevents infinite loops and re-processing
  * of already-impacted nodes. Depth is capped to avoid unrealistic
@@ -49,7 +52,10 @@ public class ImpactAnalyzer {
             int levelSize = queue.size();
             for (int i = 0; i < levelSize; i++) {
                 MethodNode current = queue.poll();
-                for (MethodNode caller : graph.getCallers(current)) {
+                // Name-based lookup at every hop, not just at seeding,
+                // so unresolved "UNKNOWN" class boundaries don't break
+                // multi-hop chains.
+                for (MethodNode caller : graph.getCallersByMethodName(current.getMethodName())) {
                     if (!visited.contains(caller)) {
                         visited.add(caller);
                         if (depth == 1) {

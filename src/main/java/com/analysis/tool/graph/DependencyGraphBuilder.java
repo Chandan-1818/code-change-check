@@ -6,6 +6,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,25 +24,40 @@ import java.util.List;
  */
 public class DependencyGraphBuilder {
 
+    /**
+     * Builds a graph from a single source file.
+     */
     public DependencyGraph buildFromSource(String javaSourceCode) {
+        return buildFromSources(Collections.singletonList(javaSourceCode));
+    }
+
+    /**
+     * Builds a single merged graph from multiple source files (e.g. a
+     * production file and its corresponding test file), so that call
+     * chains spanning both files (test -> production -> production)
+     * are captured as connected edges in one graph.
+     */
+    public DependencyGraph buildFromSources(List<String> javaSourceCodes) {
         DependencyGraph graph = new DependencyGraph();
 
-        CompilationUnit compilationUnit = StaticJavaParser.parse(javaSourceCode);
+        for (String javaSourceCode : javaSourceCodes) {
+            CompilationUnit compilationUnit = StaticJavaParser.parse(javaSourceCode);
 
-        List<ClassOrInterfaceDeclaration> classes =
-                compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
+            List<ClassOrInterfaceDeclaration> classes =
+                    compilationUnit.findAll(ClassOrInterfaceDeclaration.class);
 
-        for (ClassOrInterfaceDeclaration classDecl : classes) {
-            String className = classDecl.getNameAsString();
+            for (ClassOrInterfaceDeclaration classDecl : classes) {
+                String className = classDecl.getNameAsString();
 
-            List<MethodDeclaration> methods = classDecl.findAll(MethodDeclaration.class);
-            for (MethodDeclaration method : methods) {
-                MethodNode callerNode = new MethodNode(className, method.getNameAsString());
+                List<MethodDeclaration> methods = classDecl.findAll(MethodDeclaration.class);
+                for (MethodDeclaration method : methods) {
+                    MethodNode callerNode = new MethodNode(className, method.getNameAsString());
 
-                List<MethodCallExpr> calls = method.findAll(MethodCallExpr.class);
-                for (MethodCallExpr call : calls) {
-                    MethodNode calleeNode = new MethodNode("UNKNOWN", call.getNameAsString());
-                    graph.addEdge(callerNode, calleeNode);
+                    List<MethodCallExpr> calls = method.findAll(MethodCallExpr.class);
+                    for (MethodCallExpr call : calls) {
+                        MethodNode calleeNode = new MethodNode("UNKNOWN", call.getNameAsString());
+                        graph.addEdge(callerNode, calleeNode);
+                    }
                 }
             }
         }
