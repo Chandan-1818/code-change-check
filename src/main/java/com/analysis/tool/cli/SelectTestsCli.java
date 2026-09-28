@@ -2,6 +2,7 @@ package com.analysis.tool.cli;
 
 import com.analysis.tool.impact.ChangeImpactAnalyzer;
 import com.analysis.tool.impact.FileMapping;
+import com.analysis.tool.impact.TestSelectionReport;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -18,9 +19,12 @@ import java.util.TreeSet;
  * Each sourceFile=testFile argument pairs a production file with its test
  * file, both relative to the repository root. The tool compares the two
  * revisions and prints the test methods that should be re-run, including
- * tests that reach a changed method through a chain of calls.
+ * tests that reach a changed method through a chain of calls. Changed
+ * methods that no test reaches are listed separately as a warning, so an
+ * empty selection is not mistaken for "nothing to run".
  *
- * Exit codes: 0 = success, 1 = invalid arguments, 2 = analysis failed.
+ * Exit codes: 0 = success (including runs that print warnings),
+ * 1 = invalid arguments, 2 = analysis failed.
  *
  * Current limitation: the source/test file pairs must be supplied by the
  * caller; they are not yet discovered automatically.
@@ -55,19 +59,31 @@ public class SelectTestsCli {
         }
 
         try {
-            Set<String> selectedTests = new TreeSet<>(
-                    new ChangeImpactAnalyzer().findImpactedTestsTransitively(
-                            repoPath, oldRevision, newRevision, mappings));
+            TestSelectionReport report = new ChangeImpactAnalyzer()
+                    .analyzeTransitively(repoPath, oldRevision, newRevision, mappings);
+
+            Set<String> selectedTests = new TreeSet<>(report.getSelectedTests());
+            Set<String> untestedMethods = new TreeSet<>(report.getUntestedChangedMethods());
 
             out.println("Repository     : " + repoPath);
             out.println("Compared       : " + oldRevision + " -> " + newRevision);
             out.println("File pairs     : " + mappings.size());
-            if (selectedTests.isEmpty()) {
-                out.println("Selected tests : none (no impacted tests found)");
-            } else {
+
+            if (!selectedTests.isEmpty()) {
                 out.println("Selected tests (" + selectedTests.size() + "):");
                 for (String test : selectedTests) {
                     out.println("  - " + test);
+                }
+            } else if (untestedMethods.isEmpty()) {
+                out.println("Selected tests : none (no impacted tests found)");
+            } else {
+                out.println("Selected tests : none");
+            }
+
+            if (!untestedMethods.isEmpty()) {
+                out.println("WARNING - changed methods not reached by any test (" + untestedMethods.size() + "):");
+                for (String method : untestedMethods) {
+                    out.println("  - " + method);
                 }
             }
             return 0;
