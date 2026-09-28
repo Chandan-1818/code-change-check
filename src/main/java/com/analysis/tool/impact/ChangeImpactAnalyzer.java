@@ -1,10 +1,18 @@
 package com.analysis.tool.impact;
 
 import com.analysis.tool.git.GitAnalyzer;
+import com.analysis.tool.graph.DependencyGraph;
+import com.analysis.tool.graph.DependencyGraphBuilder;
+import com.analysis.tool.graph.MethodNode;
 import com.analysis.tool.parser.JavaParserAnalyzer;
 import com.analysis.tool.parser.MethodInfo;
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,22 +22,31 @@ import java.util.Set;
  * revisions, and its corresponding test file, determines which test methods
  * need to be re-run.
  *
- * Two entry points are provided:
+ * Three entry points are provided:
  * - findImpactedTests(repoPath, oldRevision, newRevision, sourceFilePath, testFilePath)
- *   for a single file pair (original scope).
+ *   for a single file pair, using direct-call matching only.
  * - findImpactedTests(repoPath, oldRevision, newRevision, fileMappings)
- *   for multiple file pairs in one call, opening the Git repository once
- *   and unioning the impacted tests across all files.
+ *   for multiple file pairs, using direct-call matching only, with each
+ *   pair processed independently.
+ * - findImpactedTestsTransitively(repoPath, oldRevision, newRevision, fileMappings)
+ *   for multiple file pairs, building ONE combined dependency graph and
+ *   using reverse BFS, so tests that reach a changed method through a
+ *   chain of calls (possibly spanning several files) are also selected.
  *
  * Considers only added and modified methods as impact triggers (a removed
  * method cannot be "called" by a test in the new version, so it is excluded
  * here; a test referencing a removed method would fail to compile, which is
  * a separate concern from impact selection).
  *
- * If the source file did not exist at the old revision (e.g. it is a newly
+ * If a source file did not exist at the old revision (e.g. it is a newly
  * added file), its old content is treated as empty, so every method in the
  * new version is correctly classified as "added" rather than causing an
  * exception.
+ *
+ * Known limitations of findImpactedTestsTransitively: matching is by method
+ * name only (callee classes are unresolved), results are plain test method
+ * names (two test classes with the same test method name would collide),
+ * and changes are detected in source files only, not in test files.
  */
 public class ChangeImpactAnalyzer {
 
@@ -69,6 +86,83 @@ public class ChangeImpactAnalyzer {
             gitAnalyzer.close();
         }
         return allImpactedTests;
+    }
+
+    /**
+     * Selects tests using one combined dependency graph across all file
+     * pairs, so a test is selected if it reaches a changed method directly
+     * or through any chain of calls (up to the analyzer's depth cap).
+     */
+    public Set<String> findImpactedTestsTransitively(
+            String repoPath,
+            String oldRevision,
+            String newRevision,
+            List<FileMapping> fileMappings) throws Exception {
+
+        GitAnalyzer gitAnalyzer = new GitAnalyzer(repoPath);
+        try {
+            JavaParserAnalyzer parserAnalyzer = new JavaParserAnalyzer();
+            MethodChangeDetector detector = new MethodChangeDetector();
+
+            Set<String> changedMethodNames = new HashSet<>();
+            List<String> allSources = new ArrayList<>();
+            Set<MethodNode> testNodes = new HashSet<>();
+
+            for (FileMapping mapping : fileMappings) {
+                String oldSource;
+                try {
+                    oldSource = gitAnalyzer.getFileContentAtRevision(oldRevision, mapping.getSourceFilePath());
+                } catch (IOException e) {
+                    // File did not exist at the old revision (newly added).
+                    oldSource = "";
+                }
+                String newSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getSourceFilePath());
+                String testSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getTestFilePath());
+
+                MethodChangeResult changeResult = detector.detectChanges(
+                        parserAnalyzer.extractMethods(oldSource),
+                        parserAnalyzer.extractMethods(newSource));
+                changedMethodNames.addAll(changeResult.getModifiedMethods());
+                changedMethodNames.addAll(changeResult.getAddedMethods());
+
+                allSources.add(newSource);
+                allSources.add(testSource);
+                collectTestNodes(testSource, testNodes);
+            }
+
+            DependencyGraph graph = new DependencyGraphBuilder().buildFromSources(allSources);
+            ImpactSet impactSet = new ImpactAnalyzer().analyzeImpact(graph, changedMethodNames);
+
+            Set<MethodNode> impactedNodes = new HashSet<>();
+            impactedNodes.addAll(impactSet.getChangedMethods());
+            impactedNodes.addAll(impactSet.getDirectlyImpacted());
+            impactedNodes.addAll(impactSet.getTransitivelyImpacted().keySet());
+
+            Set<String> impactedTests = new HashSet<>();
+            for (MethodNode node : impactedNodes) {
+                if (testNodes.contains(node)) {
+                    impactedTests.add(node.getMethodName());
+                }
+            }
+            return impactedTests;
+        } finally {
+            gitAnalyzer.close();
+        }
+    }
+
+    /**
+     * Records every method annotated with @Test in the given test source
+     * as a MethodNode (enclosing class + method name).
+     */
+    private void collectTestNodes(String testSource, Set<MethodNode> testNodes) {
+        CompilationUnit compilationUnit = StaticJavaParser.parse(testSource);
+        for (ClassOrInterfaceDeclaration classDecl : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
+            for (MethodDeclaration method : classDecl.findAll(MethodDeclaration.class)) {
+                if (method.isAnnotationPresent("Test")) {
+                    testNodes.add(new MethodNode(classDecl.getNameAsString(), method.getNameAsString()));
+                }
+            }
+        }
     }
 
     private Set<String> findImpactedTestsForFile(
