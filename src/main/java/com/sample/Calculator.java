@@ -15,4 +15,8 @@ public class Calculator {
         Multiplier multiplier = new Multiplier();
         return multiplier.multiply(a, b);
     }
+
+    public int negate(int a) {
+        return -a;
+    }
 }
