@@ -20,13 +20,13 @@ public class TestRunnerIntegrationTest {
             "D:/PROJECT/SAMPLE-PROJECT/sample-project";
 
     @Test
-    public void shouldRunAllFiveTestsInTheFullSuite() throws Exception {
+    public void shouldRunAllSevenTestsInTheFullSuite() throws Exception {
         TestRunner runner = new TestRunner();
         TestRunResult result = runner.runFullSuite(SAMPLE_PROJECT_PATH);
 
         assertTrue(result.isBuildSucceeded(), "Expected the full-suite build to succeed");
-        assertEquals(5, result.getTotalTests(), "Expected all 5 sample-project tests to run");
-        assertEquals(5, result.getPassed(), "Expected all 5 tests to pass");
+        assertEquals(7, result.getTotalTests(), "Expected all 7 sample-project tests to run");
+        assertEquals(7, result.getPassed(), "Expected all 7 tests to pass");
         assertEquals(0, result.getFailed(), "Expected no failures");
         assertEquals(0, result.getSkipped(), "Expected no skipped tests");
     }

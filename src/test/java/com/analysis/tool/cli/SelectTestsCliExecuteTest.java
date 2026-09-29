@@ -36,7 +36,7 @@ public class SelectTestsCliExecuteTest {
     private static final String VERSION_5_COMMIT = "268a165";
 
     @Test
-    public void shouldExecuteAndReportSixtyPercentTestReduction() {
+    public void shouldExecuteAndReportTestReduction() {
         ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
         ByteArrayOutputStream errBytes = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(outBytes, true, StandardCharsets.UTF_8);
@@ -50,12 +50,12 @@ public class SelectTestsCliExecuteTest {
         String output = outBytes.toString(StandardCharsets.UTF_8);
 
         assertEquals(0, exitCode, "Unexpected error output: " + errBytes.toString(StandardCharsets.UTF_8));
-        assertTrue(output.contains("Full suite     : 5 tests, 5 passed, 0 failed"),
-                "Expected the full suite to report 5 passed, 0 failed. Actual output:\n" + output);
+        assertTrue(output.contains("Full suite     : 7 tests, 7 passed, 0 failed"),
+                "Expected the full suite to report 7 passed, 0 failed. Actual output:\n" + output);
         assertTrue(output.contains("Selected tests : 2 tests, 2 passed, 0 failed"),
                 "Expected the selected run to report 2 passed, 0 failed. Actual output:\n" + output);
-        assertTrue(output.contains("Test reduction : 60.0%"),
-                "Expected exactly 60.0% test reduction. Actual output:\n" + output);
+        assertTrue(output.contains("Test reduction : 71.4%"),
+                "Expected exactly 71.4% test reduction. Actual output:\n" + output);
         assertTrue(output.contains("build succeeded"),
                 "Expected at least one 'build succeeded' line. Actual output:\n" + output);
     }
