@@ -34,9 +34,9 @@ import java.util.Set;
  *   using reverse BFS, so tests that reach a changed method through a
  *   chain of calls (possibly spanning several files) are also selected.
  *   Returns a TestSelectionReport that also lists changed methods which
- *   no test reaches.
+ *   no test reaches, and Class#method identifiers for execution (Phase 10).
  * - findImpactedTestsTransitively(...) returns only the selected tests
- *   from analyzeTransitively.
+ *   (plain names) from analyzeTransitively.
  *
  * Considers only added and modified methods as impact triggers (a removed
  * method cannot be "called" by a test in the new version, so it is excluded
@@ -49,9 +49,10 @@ import java.util.Set;
  * exception.
  *
  * Known limitations of the transitive entry points: matching is by method
- * name only (callee classes are unresolved), results are plain method
- * names (two classes with the same method name would collide), and changes
- * are detected in source files only, not in test files.
+ * name only (callee classes are unresolved), plain-name results are two
+ * classes with the same method name would collide (the Class#method
+ * identifiers do not have this problem), and changes are detected in
+ * source files only, not in test files.
  */
 public class ChangeImpactAnalyzer {
 
@@ -159,41 +160,45 @@ public class ChangeImpactAnalyzer {
             ImpactAnalyzer impactAnalyzer = new ImpactAnalyzer();
 
             Set<String> selectedTests = new HashSet<>();
+            Set<String> selectedTestIdentifiers = new HashSet<>();
             Set<String> untestedChangedMethods = new HashSet<>();
 
             for (String changedMethod : changedMethodNames) {
                 ImpactSet impactSet = impactAnalyzer.analyzeImpact(graph, Collections.singleton(changedMethod));
-                Set<String> testsForMethod = testsReached(impactSet, testNodes);
-                if (testsForMethod.isEmpty()) {
+                Set<MethodNode> testNodesForMethod = testNodesReached(impactSet, testNodes);
+                if (testNodesForMethod.isEmpty()) {
                     untestedChangedMethods.add(changedMethod);
                 } else {
-                    selectedTests.addAll(testsForMethod);
+                    for (MethodNode testNode : testNodesForMethod) {
+                        selectedTests.add(testNode.getMethodName());
+                        selectedTestIdentifiers.add(testNode.getClassName() + "#" + testNode.getMethodName());
+                    }
                 }
             }
 
-            return new TestSelectionReport(selectedTests, untestedChangedMethods);
+            return new TestSelectionReport(selectedTests, selectedTestIdentifiers, untestedChangedMethods);
         } finally {
             gitAnalyzer.close();
         }
     }
 
     /**
-     * Returns the names of test methods that appear anywhere in the given
+     * Returns the test MethodNodes that appear anywhere in the given
      * impact set (as changed, directly impacted or transitively impacted).
      */
-    private Set<String> testsReached(ImpactSet impactSet, Set<MethodNode> testNodes) {
+    private Set<MethodNode> testNodesReached(ImpactSet impactSet, Set<MethodNode> testNodes) {
         Set<MethodNode> impactedNodes = new HashSet<>();
         impactedNodes.addAll(impactSet.getChangedMethods());
         impactedNodes.addAll(impactSet.getDirectlyImpacted());
         impactedNodes.addAll(impactSet.getTransitivelyImpacted().keySet());
 
-        Set<String> tests = new HashSet<>();
+        Set<MethodNode> matchingTestNodes = new HashSet<>();
         for (MethodNode node : impactedNodes) {
             if (testNodes.contains(node)) {
-                tests.add(node.getMethodName());
+                matchingTestNodes.add(node);
             }
         }
-        return tests;
+        return matchingTestNodes;
     }
 
     /**
