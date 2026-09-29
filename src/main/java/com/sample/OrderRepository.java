@@ -8,7 +8,8 @@ public class OrderRepository {
     private final Map<Integer, Integer> orderTotals = new HashMap<>();
 
     public void save(int orderId, int total) {
-        orderTotals.put(orderId, total);
+        int storedTotal = total;
+        orderTotals.put(orderId, storedTotal);
     }
 
     public int findTotal(int orderId) {
