@@ -132,6 +132,32 @@ public class GitAnalyzer {
         }
     }
 
+    /**
+     * Lists every file path present at the given revision (recursive,
+     * forward-slash paths relative to the repository root).
+     *
+     * @throws IOException if the revision cannot be resolved
+     */
+    public List<String> listFilesAtRevision(String revision) throws IOException {
+        ObjectId commitId = repository.resolve(revision);
+        if (commitId == null) {
+            throw new IOException("Could not resolve revision: " + revision);
+        }
+
+        List<String> files = new ArrayList<>();
+        try (RevWalk revWalk = new RevWalk(repository)) {
+            RevCommit commit = revWalk.parseCommit(commitId);
+            try (TreeWalk treeWalk = new TreeWalk(repository)) {
+                treeWalk.addTree(commit.getTree());
+                treeWalk.setRecursive(true);
+                while (treeWalk.next()) {
+                    files.add(treeWalk.getPathString());
+                }
+            }
+        }
+        return files;
+    }
+
     public void close() {
         repository.close();
     }
