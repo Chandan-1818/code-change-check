@@ -1,5 +1,6 @@
 package com.analysis.tool.impact;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -26,13 +27,22 @@ public class TestSelectionReport {
     private final Set<String> selectedTests;
     private final Set<String> selectedTestIdentifiers;
     private final Set<String> untestedChangedMethods;
+    private final Set<String> removedMethods;
 
     public TestSelectionReport(Set<String> selectedTests,
-                                Set<String> selectedTestIdentifiers,
-                                Set<String> untestedChangedMethods) {
+                               Set<String> selectedTestIdentifiers,
+                               Set<String> untestedChangedMethods) {
+        this(selectedTests, selectedTestIdentifiers, untestedChangedMethods, Collections.<String>emptySet());
+    }
+
+    public TestSelectionReport(Set<String> selectedTests,
+                               Set<String> selectedTestIdentifiers,
+                               Set<String> untestedChangedMethods,
+                               Set<String> removedMethods) {
         this.selectedTests = selectedTests;
         this.selectedTestIdentifiers = selectedTestIdentifiers;
         this.untestedChangedMethods = untestedChangedMethods;
+        this.removedMethods = removedMethods;
     }
 
     public Set<String> getSelectedTests() {
@@ -45,5 +55,9 @@ public class TestSelectionReport {
 
     public Set<String> getUntestedChangedMethods() {
         return untestedChangedMethods;
+    }
+
+    public Set<String> getRemovedMethods() {
+        return removedMethods;
     }
 }

@@ -79,6 +79,7 @@ public class SelectTestsCli {
             Set<String> selectedTests = new TreeSet<>(report.getSelectedTests());
             Set<String> selectedTestIdentifiers = new TreeSet<>(report.getSelectedTestIdentifiers());
             Set<String> untestedMethods = new TreeSet<>(report.getUntestedChangedMethods());
+            Set<String> removedMethods = new TreeSet<>(report.getRemovedMethods());
 
             out.println("Repository     : " + repoPath);
             out.println("Compared       : " + oldRevision + " -> " + newRevision);
@@ -98,6 +99,13 @@ public class SelectTestsCli {
             if (!untestedMethods.isEmpty()) {
                 out.println("WARNING - changed methods not reached by any test (" + untestedMethods.size() + "):");
                 for (String method : untestedMethods) {
+                    out.println("  - " + method);
+                }
+            }
+
+            if (!removedMethods.isEmpty()) {
+                out.println("Removed methods (" + removedMethods.size() + "):");
+                for (String method : removedMethods) {
                     out.println("  - " + method);
                 }
             }

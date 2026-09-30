@@ -131,6 +131,7 @@ public class ChangeImpactAnalyzer {
             MethodChangeDetector detector = new MethodChangeDetector();
 
             Set<String> changedMethodNames = new HashSet<>();
+            Set<String> removedMethodNames = new HashSet<>();
             List<String> allSources = new ArrayList<>();
             Set<MethodNode> testNodes = new HashSet<>();
 
@@ -162,6 +163,7 @@ public class ChangeImpactAnalyzer {
                         parserAnalyzer.extractMethods(newSource));
                 changedMethodNames.addAll(changeResult.getModifiedMethods());
                 changedMethodNames.addAll(changeResult.getAddedMethods());
+                removedMethodNames.addAll(changeResult.getRemovedMethods());
 
                 allSources.add(newSource);
                 allSources.add(testSource);
@@ -188,7 +190,7 @@ public class ChangeImpactAnalyzer {
                 }
             }
 
-            return new TestSelectionReport(selectedTests, selectedTestIdentifiers, untestedChangedMethods);
+            return new TestSelectionReport(selectedTests, selectedTestIdentifiers, untestedChangedMethods, removedMethodNames);
         } finally {
             gitAnalyzer.close();
         }

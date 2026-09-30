@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -101,6 +102,48 @@ class ChangeImpactAnalyzerDeletedFileIntegrationTest {
 
         assertTrue(report.getSelectedTests().isEmpty());
         assertTrue(report.getUntestedChangedMethods().contains("add"));
+    }
+
+    @Test
+    void removedMethod_isReported_andDoesNotAffectSelection() throws Exception {
+        String oldCommit;
+        String newCommit;
+
+        try (Git git = Git.init().setDirectory(repoDir.toFile()).call()) {
+            write(SRC,
+                    "package demo;\n"
+                  + "public class Calculator {\n"
+                  + "    public int add(int a, int b) { return a + b; }\n"
+                  + "    public int negate(int a) { return -a; }\n"
+                  + "}\n");
+            write(TEST,
+                    "package demo;\n"
+                  + "import org.junit.jupiter.api.Test;\n"
+                  + "public class CalculatorTest {\n"
+                  + "    @Test\n"
+                  + "    public void testAdd() { new Calculator().add(1, 2); }\n"
+                  + "}\n");
+            git.add().addFilepattern(".").call();
+            oldCommit = commit(git, "V1: add + negate + test for add");
+
+            write(SRC,
+                    "package demo;\n"
+                  + "public class Calculator {\n"
+                  + "    public int add(int a, int b) { return a + b; }\n"
+                  + "}\n");
+            git.add().addFilepattern(SRC).call();
+            newCommit = commit(git, "V2: remove negate");
+        }
+
+        List<FileMapping> mappings = Collections.singletonList(new FileMapping(SRC, TEST));
+
+        TestSelectionReport report = new ChangeImpactAnalyzer().analyzeTransitively(
+                repoDir.toString(), oldCommit, newCommit, mappings);
+
+        assertTrue(report.getRemovedMethods().contains("negate"));
+        assertFalse(report.getRemovedMethods().contains("add"));
+        assertTrue(report.getSelectedTests().isEmpty());
+        assertTrue(report.getUntestedChangedMethods().isEmpty());
     }
 
     private void write(String relativePath, String content) throws Exception {
