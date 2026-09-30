@@ -142,8 +142,20 @@ public class ChangeImpactAnalyzer {
                     // File did not exist at the old revision (newly added).
                     oldSource = "";
                 }
-                String newSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getSourceFilePath());
-                String testSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getTestFilePath());
+                String newSource;
+                try {
+                    newSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getSourceFilePath());
+                } catch (IOException e) {
+                    // File was deleted at the new revision: treat as empty so its methods are classified as removed.
+                    newSource = "";
+                }
+                String testSource;
+                try {
+                    testSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getTestFilePath());
+                } catch (IOException e) {
+                    // Test file was deleted at the new revision: treat as empty so it contributes no tests.
+                    testSource = "";
+                }
 
                 MethodChangeResult changeResult = detector.detectChanges(
                         parserAnalyzer.extractMethods(oldSource),
