@@ -2,11 +2,14 @@ package com.analysis.tool.cli;
 
 import com.analysis.tool.execution.TestRunResult;
 import com.analysis.tool.execution.TestRunner;
+import com.analysis.tool.git.GitAnalyzer;
 import com.analysis.tool.impact.ChangeImpactAnalyzer;
 import com.analysis.tool.impact.FileMapping;
+import com.analysis.tool.impact.FileMappingDiscoverer;
 import com.analysis.tool.impact.TestSelectionReport;
 import com.analysis.tool.metrics.EvaluationMetrics;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +21,7 @@ import java.util.TreeSet;
  * Command-line entry point for change-sensitive regression test selection.
  *
  * Usage:
- *   SelectTestsCli <repoPath> <oldRev> <newRev> <sourceFile=testFile> [<sourceFile=testFile> ...] [--execute]
+ *   SelectTestsCli <repoPath> <oldRev> <newRev> [<sourceFile=testFile> ...] [--execute]
  *
  * Each sourceFile=testFile argument pairs a production file with its test
  * file, both relative to the repository root. The tool compares the two
@@ -37,8 +40,8 @@ import java.util.TreeSet;
  * Exit codes: 0 = success (including runs that print warnings),
  * 1 = invalid arguments, 2 = analysis failed.
  *
- * Current limitation: the source/test file pairs must be supplied by the
- * caller; they are not yet discovered automatically.
+ * If no sourceFile=testFile pairs are given, they are discovered from the
+ * files present at either revision, using the naming convention Foo.java -> FooTest.java.
  */
 public class SelectTestsCli {
 
@@ -51,8 +54,8 @@ public class SelectTestsCli {
         boolean execute = args.length > 0 && "--execute".equals(args[args.length - 1]);
         String[] positionalArgs = execute ? Arrays.copyOf(args, args.length - 1) : args;
 
-        if (positionalArgs.length < 4) {
-            err.println("Usage: SelectTestsCli <repoPath> <oldRev> <newRev> <sourceFile=testFile> [<sourceFile=testFile> ...] [--execute]");
+        if (positionalArgs.length < 3) {
+            err.println("Usage: SelectTestsCli <repoPath> <oldRev> <newRev> [<sourceFile=testFile> ...] [--execute]");
             return 1;
         }
 
@@ -73,6 +76,11 @@ public class SelectTestsCli {
         }
 
         try {
+            boolean autoDiscovered = mappings.isEmpty();
+            if (autoDiscovered) {
+                mappings = discoverMappings(repoPath, oldRevision, newRevision);
+            }
+
             TestSelectionReport report = new ChangeImpactAnalyzer()
                     .analyzeTransitively(repoPath, oldRevision, newRevision, mappings);
 
@@ -83,7 +91,7 @@ public class SelectTestsCli {
 
             out.println("Repository     : " + repoPath);
             out.println("Compared       : " + oldRevision + " -> " + newRevision);
-            out.println("File pairs     : " + mappings.size());
+            out.println("File pairs     : " + mappings.size() + (autoDiscovered ? " (auto-discovered)" : ""));
 
             if (!selectedTests.isEmpty()) {
                 out.println("Selected tests (" + selectedTests.size() + "):");
@@ -140,6 +148,18 @@ public class SelectTestsCli {
         } catch (Exception e) {
             err.println("Analysis failed: " + e.getMessage());
             return 2;
+        }
+    }
+
+    private static List<FileMapping> discoverMappings(String repoPath, String oldRevision, String newRevision)
+            throws IOException {
+        GitAnalyzer git = new GitAnalyzer(repoPath);
+        try {
+            Set<String> allFiles = new TreeSet<>(git.listFilesAtRevision(oldRevision));
+            allFiles.addAll(git.listFilesAtRevision(newRevision));
+            return new FileMappingDiscoverer().discover(new ArrayList<>(allFiles));
+        } finally {
+            git.close();
         }
     }
 }
