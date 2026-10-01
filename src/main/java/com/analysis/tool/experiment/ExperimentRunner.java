@@ -99,7 +99,7 @@ public class ExperimentRunner {
         return values.isEmpty() ? emptyText : String.join(separator, values);
     }
 
-    private static List<FileMapping> discoverMappings(String repoPath, String oldRevision, String newRevision)
+    static List<FileMapping> discoverMappings(String repoPath, String oldRevision, String newRevision)
             throws IOException {
         GitAnalyzer git = new GitAnalyzer(repoPath);
         try {
