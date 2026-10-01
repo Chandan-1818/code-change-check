@@ -21,10 +21,12 @@ public class TestImpactMapperIntegrationTest {
     private static final String CALCULATOR_TEST_PATH =
             "src/test/java/com/sample/CalculatorTest.java";
 
+    private static final String VERSION_8_COMMIT = "ebec3c0";
+
     @Test
     public void shouldMapSubtractToTestSubtractOnly() throws Exception {
         GitAnalyzer gitAnalyzer = new GitAnalyzer(SAMPLE_PROJECT_PATH);
-        String testSource = gitAnalyzer.getFileContentAtRevision("HEAD", CALCULATOR_TEST_PATH);
+        String testSource = gitAnalyzer.getFileContentAtRevision(VERSION_8_COMMIT, CALCULATOR_TEST_PATH);
         gitAnalyzer.close();
 
         TestImpactMapper mapper = new TestImpactMapper();
@@ -39,7 +41,7 @@ public class TestImpactMapperIntegrationTest {
     @Test
     public void shouldMapAddToTestAddOnly() throws Exception {
         GitAnalyzer gitAnalyzer = new GitAnalyzer(SAMPLE_PROJECT_PATH);
-        String testSource = gitAnalyzer.getFileContentAtRevision("HEAD", CALCULATOR_TEST_PATH);
+        String testSource = gitAnalyzer.getFileContentAtRevision(VERSION_8_COMMIT, CALCULATOR_TEST_PATH);
         gitAnalyzer.close();
 
         TestImpactMapper mapper = new TestImpactMapper();
