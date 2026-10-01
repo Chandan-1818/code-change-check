@@ -1,6 +1,11 @@
 package com.analysis.tool.execution;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.analysis.tool.testsupport.PinnedSampleCheckout;
+
+import java.nio.file.Path;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,10 +24,16 @@ public class TestRunnerIntegrationTest {
     private static final String SAMPLE_PROJECT_PATH =
             "D:/PROJECT/SAMPLE-PROJECT/sample-project";
 
+    private static final String VERSION_8_COMMIT = "ebec3c0";
+
+    @TempDir
+    Path tempDir;
+
     @Test
     public void shouldRunAllSevenTestsInTheFullSuite() throws Exception {
         TestRunner runner = new TestRunner();
-        TestRunResult result = runner.runFullSuite(SAMPLE_PROJECT_PATH);
+        String repoPath = PinnedSampleCheckout.cloneAt(SAMPLE_PROJECT_PATH, VERSION_8_COMMIT, tempDir);
+        TestRunResult result = runner.runFullSuite(repoPath);
 
         assertTrue(result.isBuildSucceeded(), "Expected the full-suite build to succeed");
         assertEquals(7, result.getTotalTests(), "Expected all 7 sample-project tests to run");
@@ -38,7 +49,8 @@ public class TestRunnerIntegrationTest {
         selected.add("MultiplierTest#testMultiply");
 
         TestRunner runner = new TestRunner();
-        TestRunResult result = runner.runSelectedTests(SAMPLE_PROJECT_PATH, selected);
+        String repoPath = PinnedSampleCheckout.cloneAt(SAMPLE_PROJECT_PATH, VERSION_8_COMMIT, tempDir);
+        TestRunResult result = runner.runSelectedTests(repoPath, selected);
 
         assertTrue(result.isBuildSucceeded(), "Expected the selected-tests build to succeed");
         assertEquals(2, result.getTotalTests(), "Expected exactly the 2 selected tests to run");

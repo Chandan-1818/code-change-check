@@ -1,6 +1,11 @@
 package com.analysis.tool.cli;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.analysis.tool.testsupport.PinnedSampleCheckout;
+
+import java.nio.file.Path;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -27,6 +32,11 @@ public class SelectTestsCliExecuteTest {
     private static final String SAMPLE_PROJECT_PATH =
             "D:/PROJECT/SAMPLE-PROJECT/sample-project";
 
+    private static final String VERSION_8_COMMIT = "ebec3c0";
+
+    @TempDir
+    Path tempDir;
+
     private static final String CALCULATOR_PAIR =
             "src/main/java/com/sample/Calculator.java=src/test/java/com/sample/CalculatorTest.java";
     private static final String MULTIPLIER_PAIR =
@@ -43,7 +53,8 @@ public class SelectTestsCliExecuteTest {
         PrintStream err = new PrintStream(errBytes, true, StandardCharsets.UTF_8);
 
         int exitCode = SelectTestsCli.run(
-                new String[] {SAMPLE_PROJECT_PATH, VERSION_4_COMMIT, VERSION_5_COMMIT,
+                new String[] {PinnedSampleCheckout.cloneAt(SAMPLE_PROJECT_PATH, VERSION_8_COMMIT, tempDir),
+                        VERSION_4_COMMIT, VERSION_5_COMMIT,
                         CALCULATOR_PAIR, MULTIPLIER_PAIR, "--execute"},
                 out, err);
 

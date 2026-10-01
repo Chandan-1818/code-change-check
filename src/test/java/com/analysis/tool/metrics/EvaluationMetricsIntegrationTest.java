@@ -3,6 +3,11 @@ package com.analysis.tool.metrics;
 import com.analysis.tool.execution.TestRunResult;
 import com.analysis.tool.execution.TestRunner;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import com.analysis.tool.testsupport.PinnedSampleCheckout;
+
+import java.nio.file.Path;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,16 +42,22 @@ public class EvaluationMetricsIntegrationTest {
     private static final String SAMPLE_PROJECT_PATH =
             "D:/PROJECT/SAMPLE-PROJECT/sample-project";
 
+    private static final String VERSION_8_COMMIT = "ebec3c0";
+
+    @TempDir
+    Path tempDir;
+
     @Test
     public void shouldComputeTestReductionForRealV4ToV5Selection() throws Exception {
         TestRunner runner = new TestRunner();
+        String repoPath = PinnedSampleCheckout.cloneAt(SAMPLE_PROJECT_PATH, VERSION_8_COMMIT, tempDir);
 
-        TestRunResult fullRun = runner.runFullSuite(SAMPLE_PROJECT_PATH);
+        TestRunResult fullRun = runner.runFullSuite(repoPath);
 
         Set<String> selected = new HashSet<>();
         selected.add("CalculatorTest#testCompute");
         selected.add("MultiplierTest#testMultiply");
-        TestRunResult selectedRun = runner.runSelectedTests(SAMPLE_PROJECT_PATH, selected);
+        TestRunResult selectedRun = runner.runSelectedTests(repoPath, selected);
 
         EvaluationMetrics metrics = EvaluationMetrics.compute(fullRun, selectedRun);
 
