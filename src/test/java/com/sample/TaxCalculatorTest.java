@@ -16,4 +16,10 @@ public class TaxCalculatorTest {
         TaxCalculator taxCalculator = new TaxCalculator();
         assertEquals(0, taxCalculator.calculateTax(0));
     }
+
+    @Test
+    public void testCalculateTaxHasMinimumOfOne() {
+        TaxCalculator taxCalculator = new TaxCalculator();
+        assertEquals(1, taxCalculator.calculateTax(5));
+    }
 }
