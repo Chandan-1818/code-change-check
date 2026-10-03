@@ -21,4 +21,11 @@ public class CheckoutService {
         orderService.placeOrder(orderId, price);
         return price;
     }
+
+    public int quote(String item, int amount) {
+        if (inventoryService.available(item) <= 0) {
+            return -1;
+        }
+        return pricingService.finalPrice(amount);
+    }
 }
