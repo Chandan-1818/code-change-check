@@ -11,11 +11,6 @@ public class Calculator {
         return result;
     }
 
-    public int compute(int a, int b) {
-        Multiplier multiplier = new Multiplier();
-        return multiplier.multiply(a, b);
-    }
-
     public int negate(int a) {
         return -a;
     }
