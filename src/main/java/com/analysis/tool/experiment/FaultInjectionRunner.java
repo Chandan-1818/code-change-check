@@ -284,11 +284,12 @@ public class FaultInjectionRunner {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
-            System.err.println("Usage: FaultInjectionRunner <repoPath> <baseRevision>");
+        if (args.length < 2 || args.length > 3) {
+            System.err.println("Usage: FaultInjectionRunner <repoPath> <baseRevision> [grown]");
             System.exit(1);
         }
-        List<FaultResult> results = new FaultInjectionRunner().run(args[0], args[1], sampleProjectFaults());
+        List<FaultResult> results = new FaultInjectionRunner().run(args[0], args[1],
+                args.length == 3 && "grown".equals(args[2]) ? GrownSampleFaults.faults() : sampleProjectFaults());
         System.out.print(toMarkdown(results));
         System.out.println();
         System.out.println(summary(results));
