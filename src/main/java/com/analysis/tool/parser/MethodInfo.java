@@ -1,46 +1,51 @@
 package com.analysis.tool.parser;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
- * Represents a single method declaration extracted from parsed Java source.
+ * A single method declaration extracted from parsed Java source.
  *
- * Current scope: name and body text only, sufficient for detecting
- * whether a method's implementation changed between two versions.
- *
- * Not yet included: parameter types, return type, modifiers, annotations.
- * These can be added later if impact analysis requires signature-level
- * comparison in addition to body comparison.
+ * name        - simple method name (the graph still matches by name).
+ * bodyText    - pretty-printed body, comments stripped.
+ * declaration - modifiers, return type, parameters, throws clause and
+ *               annotations. Lets the change detector see signature-only
+ *               changes and tell overloads apart.
  */
 public class MethodInfo {
 
     private final String name;
     private final String bodyText;
+    private final String declaration;
 
     public MethodInfo(String name, String bodyText) {
+        this(name, bodyText, "");
+    }
+
+    public MethodInfo(String name, String bodyText, String declaration) {
         this.name = name;
         this.bodyText = bodyText;
+        this.declaration = declaration;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public String getBodyText() {
-        return bodyText;
-    }
+    public String getBodyText() { return bodyText; }
+
+    public String getDeclaration() { return declaration; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof MethodInfo)) return false;
         MethodInfo that = (MethodInfo) o;
-        return Objects.equals(name, that.name) && Objects.equals(bodyText, that.bodyText);
+        return Objects.equals(name, that.name)
+                && Objects.equals(bodyText, that.bodyText)
+                && Objects.equals(declaration, that.declaration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, bodyText);
+        return Objects.hash(name, bodyText, declaration);
     }
 
     @Override
