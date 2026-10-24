@@ -141,6 +141,7 @@ public class ChangeImpactAnalyzer {
 
             Set<String> changedMethodNames = new HashSet<>();
             Set<String> removedMethodNames = new HashSet<>();
+            Set<String> expandedFiles = new java.util.TreeSet<>();
             List<String> allSources = new ArrayList<>();
             Set<MethodNode> testNodes = new HashSet<>();
 
@@ -185,6 +186,12 @@ public class ChangeImpactAnalyzer {
                 changedMethodNames.addAll(changeResult.getModifiedMethods());
                 changedMethodNames.addAll(changeResult.getAddedMethods());
                 removedMethodNames.addAll(changeResult.getRemovedMethods());
+                if (new NonMethodChangeDetector().hasNonMethodChange(oldSource, newSource)) {
+                    expandedFiles.add(mapping.getSourceFilePath());
+                    for (MethodInfo m : parserAnalyzer.extractMethods(newSource)) {
+                        changedMethodNames.add(m.getName());
+                    }
+                }
 
                 allSources.add(newSource);
                 allSources.add(testSource);
@@ -228,7 +235,7 @@ public class ChangeImpactAnalyzer {
                     selectedTests,
                     selectedTestIdentifiers,
                     untestedChangedMethods,
-                    removedMethodNames);
+                    removedMethodNames, expandedFiles);
 
         } finally {
             gitAnalyzer.close();
