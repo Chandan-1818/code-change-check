@@ -1,21 +1,13 @@
 package com.analysis.tool.cli;
 
-import com.analysis.tool.execution.TestRunResult;
-import com.analysis.tool.execution.TestRunner;
+import com.analysis.tool.execution.*;
 import com.analysis.tool.git.GitAnalyzer;
-import com.analysis.tool.impact.ChangeImpactAnalyzer;
-import com.analysis.tool.impact.FileMapping;
-import com.analysis.tool.impact.FileMappingDiscoverer;
-import com.analysis.tool.impact.TestSelectionReport;
+import com.analysis.tool.impact.*;
 import com.analysis.tool.metrics.EvaluationMetrics;
 
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Command-line entry point for change-sensitive regression test selection.

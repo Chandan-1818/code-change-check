@@ -2,8 +2,7 @@ package com.analysis.tool.impact;
 
 import com.analysis.tool.graph.MethodNode;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Result of impact analysis: methods that changed (depth 0), methods

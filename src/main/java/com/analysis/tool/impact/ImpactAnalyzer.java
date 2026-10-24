@@ -1,14 +1,8 @@
 package com.analysis.tool.impact;
 
-import com.analysis.tool.graph.DependencyGraph;
-import com.analysis.tool.graph.MethodNode;
+import com.analysis.tool.graph.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Performs reverse BFS over a DependencyGraph to find every method

@@ -1,16 +1,10 @@
 package com.analysis.tool.experiment;
 
 import com.analysis.tool.git.GitAnalyzer;
-import com.analysis.tool.impact.ChangeImpactAnalyzer;
-import com.analysis.tool.impact.FileMapping;
-import com.analysis.tool.impact.FileMappingDiscoverer;
-import com.analysis.tool.impact.TestSelectionReport;
+import com.analysis.tool.impact.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Runs the test-selection analysis over an ordered list of revisions and

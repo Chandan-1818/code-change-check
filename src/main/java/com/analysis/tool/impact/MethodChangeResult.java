@@ -1,6 +1,6 @@
 package com.analysis.tool.impact;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Result of comparing two sets of methods (old version vs new version)

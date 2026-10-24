@@ -1,6 +1,6 @@
 package com.analysis.tool.metrics;
 
-import com.analysis.tool.execution.TestRunResult;
+import com.analysis.tool.execution.*;
 
 /**
  * Computes evaluation metrics comparing a full test-suite run against a

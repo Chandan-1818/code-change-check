@@ -1,12 +1,8 @@
 package com.analysis.tool.impact;
 
-import com.analysis.tool.parser.MethodInfo;
+import com.analysis.tool.parser.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 /**
  * Compares two lists of MethodInfo (representing the same file at two
  * different revisions) and classifies each method as added, removed,

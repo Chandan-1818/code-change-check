@@ -1,6 +1,6 @@
 package com.analysis.tool.parser;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Represents a single method declaration extracted from parsed Java source.

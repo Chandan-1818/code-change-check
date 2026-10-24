@@ -1,10 +1,8 @@
 package com.analysis.tool.experiment;
 
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.*;
+import java.util.*;
 
 /**
  * Command-line entry point for the multi-revision experiment.

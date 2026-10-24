@@ -1,6 +1,6 @@
 package com.analysis.tool.impact;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Pairs a source file path with its corresponding test file path,

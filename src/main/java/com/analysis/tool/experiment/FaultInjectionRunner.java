@@ -1,33 +1,21 @@
 package com.analysis.tool.experiment;
 
-import com.analysis.tool.execution.TestRunResult;
-import com.analysis.tool.execution.TestRunner;
-import com.analysis.tool.impact.ChangeImpactAnalyzer;
-import com.analysis.tool.impact.FileMapping;
-import com.analysis.tool.impact.TestSelectionReport;
+import com.analysis.tool.execution.*;
+import com.analysis.tool.impact.*;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.*;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.IOException;
+import org.w3c.dom.*;
+
+import javax.xml.parsers.*;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.*;
 
 /**
  * Safety check by fault injection.

@@ -1,12 +1,10 @@
 package com.analysis.tool.parser;
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.body.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * JavaParserAnalyzer parses Java source code and extracts structural
@@ -31,9 +29,12 @@ public class JavaParserAnalyzer {
     public List<String> extractMethodNames(String javaSourceCode) {
         List<String> methodNames = new ArrayList<>();
 
-        CompilationUnit compilationUnit = StaticJavaParser.parse(javaSourceCode);
+        CompilationUnit compilationUnit =
+                StaticJavaParser.parse(javaSourceCode);
 
-        List<MethodDeclaration> methods = compilationUnit.findAll(MethodDeclaration.class);
+        List<MethodDeclaration> methods =
+                compilationUnit.findAll(MethodDeclaration.class);
+
         for (MethodDeclaration method : methods) {
             methodNames.add(method.getNameAsString());
         }
@@ -52,14 +53,20 @@ public class JavaParserAnalyzer {
     public List<MethodInfo> extractMethods(String javaSourceCode) {
         List<MethodInfo> methods = new ArrayList<>();
 
-        CompilationUnit compilationUnit = StaticJavaParser.parse(javaSourceCode);
+        CompilationUnit compilationUnit =
+                StaticJavaParser.parse(javaSourceCode);
 
-        List<MethodDeclaration> declarations = compilationUnit.findAll(MethodDeclaration.class);
+        List<MethodDeclaration> declarations =
+                compilationUnit.findAll(MethodDeclaration.class);
+
         for (MethodDeclaration declaration : declarations) {
             String name = declaration.getNameAsString();
 
-            Optional<com.github.javaparser.ast.stmt.BlockStmt> body = declaration.getBody();
-            String bodyText = body.map(Object::toString).orElse("");
+            Optional<com.github.javaparser.ast.stmt.BlockStmt> body =
+                    declaration.getBody();
+
+            String bodyText =
+                    body.map(Object::toString).orElse("");
 
             methods.add(new MethodInfo(name, bodyText));
         }

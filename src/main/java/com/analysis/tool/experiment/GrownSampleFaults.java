@@ -2,8 +2,7 @@ package com.analysis.tool.experiment;
 
 import com.analysis.tool.experiment.FaultInjectionRunner.Fault;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Faults for the grown sample project at V16 (7059f4c): one single-line fault

@@ -1,6 +1,6 @@
 package com.analysis.tool.graph;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Represents a single method as a node in the dependency graph.

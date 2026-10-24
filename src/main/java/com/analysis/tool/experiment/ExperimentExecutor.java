@@ -1,25 +1,15 @@
 package com.analysis.tool.experiment;
 
-import com.analysis.tool.execution.TestRunResult;
-import com.analysis.tool.execution.TestRunner;
-import com.analysis.tool.impact.ChangeImpactAnalyzer;
-import com.analysis.tool.impact.FileMapping;
-import com.analysis.tool.impact.TestSelectionReport;
+import com.analysis.tool.execution.*;
+import com.analysis.tool.impact.*;
 import com.analysis.tool.metrics.EvaluationMetrics;
 
 import org.eclipse.jgit.api.Git;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Stream;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.*;
 
 /**
  * Runs the selection analysis AND the real test suites for each consecutive

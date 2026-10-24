@@ -1,22 +1,15 @@
 package com.analysis.tool.impact;
 
-import com.analysis.tool.git.GitAnalyzer;
-import com.analysis.tool.graph.DependencyGraph;
-import com.analysis.tool.graph.DependencyGraphBuilder;
-import com.analysis.tool.graph.MethodNode;
-import com.analysis.tool.parser.JavaParserAnalyzer;
-import com.analysis.tool.parser.MethodInfo;
+import com.analysis.tool.git.*;
+import com.analysis.tool.graph.*;
+import com.analysis.tool.parser.*;
+
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.body.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Orchestrates the full pipeline: given a source file's change between two
@@ -26,15 +19,19 @@ import java.util.Set;
  * Entry points:
  * - findImpactedTests(repoPath, oldRevision, newRevision, sourceFilePath, testFilePath)
  *   for a single file pair, using direct-call matching only.
+ *
  * - findImpactedTests(repoPath, oldRevision, newRevision, fileMappings)
  *   for multiple file pairs, using direct-call matching only, with each
  *   pair processed independently.
+ *
  * - analyzeTransitively(repoPath, oldRevision, newRevision, fileMappings)
  *   for multiple file pairs, building ONE combined dependency graph and
  *   using reverse BFS, so tests that reach a changed method through a
  *   chain of calls (possibly spanning several files) are also selected.
+ *
  *   Returns a TestSelectionReport that also lists changed methods which
  *   no test reaches, and Class#method identifiers for execution (Phase 10).
+ *
  * - findImpactedTestsTransitively(...) returns only the selected tests
  *   (plain names) from analyzeTransitively.
  *
@@ -65,7 +62,12 @@ public class ChangeImpactAnalyzer {
 
         GitAnalyzer gitAnalyzer = new GitAnalyzer(repoPath);
         try {
-            return findImpactedTestsForFile(gitAnalyzer, oldRevision, newRevision, sourceFilePath, testFilePath);
+            return findImpactedTestsForFile(
+                    gitAnalyzer,
+                    oldRevision,
+                    newRevision,
+                    sourceFilePath,
+                    testFilePath);
         } finally {
             gitAnalyzer.close();
         }
@@ -79,6 +81,7 @@ public class ChangeImpactAnalyzer {
 
         GitAnalyzer gitAnalyzer = new GitAnalyzer(repoPath);
         Set<String> allImpactedTests = new HashSet<>();
+
         try {
             for (FileMapping mapping : fileMappings) {
                 allImpactedTests.addAll(findImpactedTestsForFile(
@@ -91,6 +94,7 @@ public class ChangeImpactAnalyzer {
         } finally {
             gitAnalyzer.close();
         }
+
         return allImpactedTests;
     }
 
@@ -105,7 +109,11 @@ public class ChangeImpactAnalyzer {
             String newRevision,
             List<FileMapping> fileMappings) throws Exception {
 
-        return analyzeTransitively(repoPath, oldRevision, newRevision, fileMappings).getSelectedTests();
+        return analyzeTransitively(
+                repoPath,
+                oldRevision,
+                newRevision,
+                fileMappings).getSelectedTests();
     }
 
     /**
@@ -113,8 +121,8 @@ public class ChangeImpactAnalyzer {
      * pairs, and reports every added or modified method that no test
      * reaches.
      *
-     * The reverse BFS runs once per changed method. A test is selected if
-     * it reaches any changed method; a changed method that reaches no test
+     * The reverse BFS runs once per changed method. A test is selected if it
+     * reaches any changed method; a changed method that reaches no test
      * is reported as untested. A changed method that calls nothing and is
      * called by nothing never becomes a graph node, so it also reaches no
      * test and is reported as untested.
@@ -126,6 +134,7 @@ public class ChangeImpactAnalyzer {
             List<FileMapping> fileMappings) throws Exception {
 
         GitAnalyzer gitAnalyzer = new GitAnalyzer(repoPath);
+
         try {
             JavaParserAnalyzer parserAnalyzer = new JavaParserAnalyzer();
             MethodChangeDetector detector = new MethodChangeDetector();
@@ -137,40 +146,55 @@ public class ChangeImpactAnalyzer {
 
             for (FileMapping mapping : fileMappings) {
                 String oldSource;
+
                 try {
-                    oldSource = gitAnalyzer.getFileContentAtRevision(oldRevision, mapping.getSourceFilePath());
+                    oldSource = gitAnalyzer.getFileContentAtRevision(
+                            oldRevision,
+                            mapping.getSourceFilePath());
                 } catch (IOException e) {
                     // File did not exist at the old revision (newly added).
                     oldSource = "";
                 }
+
                 String newSource;
+
                 try {
-                    newSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getSourceFilePath());
+                    newSource = gitAnalyzer.getFileContentAtRevision(
+                            newRevision,
+                            mapping.getSourceFilePath());
                 } catch (IOException e) {
-                    // File was deleted at the new revision: treat as empty so its methods are classified as removed.
+                    // File was deleted at the new revision.
                     newSource = "";
                 }
+
                 String testSource;
+
                 try {
-                    testSource = gitAnalyzer.getFileContentAtRevision(newRevision, mapping.getTestFilePath());
+                    testSource = gitAnalyzer.getFileContentAtRevision(
+                            newRevision,
+                            mapping.getTestFilePath());
                 } catch (IOException e) {
-                    // Test file was deleted at the new revision: treat as empty so it contributes no tests.
+                    // Test file was deleted at the new revision.
                     testSource = "";
                 }
 
                 MethodChangeResult changeResult = detector.detectChanges(
                         parserAnalyzer.extractMethods(oldSource),
                         parserAnalyzer.extractMethods(newSource));
+
                 changedMethodNames.addAll(changeResult.getModifiedMethods());
                 changedMethodNames.addAll(changeResult.getAddedMethods());
                 removedMethodNames.addAll(changeResult.getRemovedMethods());
 
                 allSources.add(newSource);
                 allSources.add(testSource);
+
                 collectTestNodes(testSource, testNodes);
             }
 
-            DependencyGraph graph = new DependencyGraphBuilder().buildFromSources(allSources);
+            DependencyGraph graph =
+                    new DependencyGraphBuilder().buildFromSources(allSources);
+
             ImpactAnalyzer impactAnalyzer = new ImpactAnalyzer();
 
             Set<String> selectedTests = new HashSet<>();
@@ -178,19 +202,34 @@ public class ChangeImpactAnalyzer {
             Set<String> untestedChangedMethods = new HashSet<>();
 
             for (String changedMethod : changedMethodNames) {
-                ImpactSet impactSet = impactAnalyzer.analyzeImpact(graph, Collections.singleton(changedMethod));
-                Set<MethodNode> testNodesForMethod = testNodesReached(impactSet, testNodes);
+                ImpactSet impactSet =
+                        impactAnalyzer.analyzeImpact(
+                                graph,
+                                Collections.singleton(changedMethod));
+
+                Set<MethodNode> testNodesForMethod =
+                        testNodesReached(impactSet, testNodes);
+
                 if (testNodesForMethod.isEmpty()) {
                     untestedChangedMethods.add(changedMethod);
                 } else {
                     for (MethodNode testNode : testNodesForMethod) {
                         selectedTests.add(testNode.getMethodName());
-                        selectedTestIdentifiers.add(testNode.getClassName() + "#" + testNode.getMethodName());
+
+                        selectedTestIdentifiers.add(
+                                testNode.getClassName()
+                                        + "#"
+                                        + testNode.getMethodName());
                     }
                 }
             }
 
-            return new TestSelectionReport(selectedTests, selectedTestIdentifiers, untestedChangedMethods, removedMethodNames);
+            return new TestSelectionReport(
+                    selectedTests,
+                    selectedTestIdentifiers,
+                    untestedChangedMethods,
+                    removedMethodNames);
+
         } finally {
             gitAnalyzer.close();
         }
@@ -200,18 +239,25 @@ public class ChangeImpactAnalyzer {
      * Returns the test MethodNodes that appear anywhere in the given
      * impact set (as changed, directly impacted or transitively impacted).
      */
-    private Set<MethodNode> testNodesReached(ImpactSet impactSet, Set<MethodNode> testNodes) {
+    private Set<MethodNode> testNodesReached(
+            ImpactSet impactSet,
+            Set<MethodNode> testNodes) {
+
         Set<MethodNode> impactedNodes = new HashSet<>();
+
         impactedNodes.addAll(impactSet.getChangedMethods());
         impactedNodes.addAll(impactSet.getDirectlyImpacted());
-        impactedNodes.addAll(impactSet.getTransitivelyImpacted().keySet());
+        impactedNodes.addAll(
+                impactSet.getTransitivelyImpacted().keySet());
 
         Set<MethodNode> matchingTestNodes = new HashSet<>();
+
         for (MethodNode node : impactedNodes) {
             if (testNodes.contains(node)) {
                 matchingTestNodes.add(node);
             }
         }
+
         return matchingTestNodes;
     }
 
@@ -219,12 +265,25 @@ public class ChangeImpactAnalyzer {
      * Records every method annotated with @Test in the given test source
      * as a MethodNode (enclosing class + method name).
      */
-    private void collectTestNodes(String testSource, Set<MethodNode> testNodes) {
-        CompilationUnit compilationUnit = StaticJavaParser.parse(testSource);
-        for (ClassOrInterfaceDeclaration classDecl : compilationUnit.findAll(ClassOrInterfaceDeclaration.class)) {
-            for (MethodDeclaration method : classDecl.findAll(MethodDeclaration.class)) {
+    private void collectTestNodes(
+            String testSource,
+            Set<MethodNode> testNodes) {
+
+        CompilationUnit compilationUnit =
+                StaticJavaParser.parse(testSource);
+
+        for (ClassOrInterfaceDeclaration classDecl :
+                compilationUnit.findAll(
+                        ClassOrInterfaceDeclaration.class)) {
+
+            for (MethodDeclaration method :
+                    classDecl.findAll(MethodDeclaration.class)) {
+
                 if (method.isAnnotationPresent("Test")) {
-                    testNodes.add(new MethodNode(classDecl.getNameAsString(), method.getNameAsString()));
+                    testNodes.add(
+                            new MethodNode(
+                                    classDecl.getNameAsString(),
+                                    method.getNameAsString()));
                 }
             }
         }
@@ -238,32 +297,63 @@ public class ChangeImpactAnalyzer {
             String testFilePath) throws Exception {
 
         String oldSource;
+
         try {
-            oldSource = gitAnalyzer.getFileContentAtRevision(oldRevision, sourceFilePath);
+            oldSource = gitAnalyzer.getFileContentAtRevision(
+                    oldRevision,
+                    sourceFilePath);
         } catch (IOException e) {
             // File did not exist at the old revision (e.g. it was newly added).
             // Treat as empty source so all methods are classified as "added".
             oldSource = "";
         }
 
-        String newSource = gitAnalyzer.getFileContentAtRevision(newRevision, sourceFilePath);
-        String testSource = gitAnalyzer.getFileContentAtRevision(newRevision, testFilePath);
+        String newSource =
+                gitAnalyzer.getFileContentAtRevision(
+                        newRevision,
+                        sourceFilePath);
 
-        JavaParserAnalyzer parserAnalyzer = new JavaParserAnalyzer();
-        List<MethodInfo> oldMethods = parserAnalyzer.extractMethods(oldSource);
-        List<MethodInfo> newMethods = parserAnalyzer.extractMethods(newSource);
+        String testSource =
+                gitAnalyzer.getFileContentAtRevision(
+                        newRevision,
+                        testFilePath);
 
-        MethodChangeDetector detector = new MethodChangeDetector();
-        MethodChangeResult changeResult = detector.detectChanges(oldMethods, newMethods);
+        JavaParserAnalyzer parserAnalyzer =
+                new JavaParserAnalyzer();
 
-        TestImpactMapper testImpactMapper = new TestImpactMapper();
+        List<MethodInfo> oldMethods =
+                parserAnalyzer.extractMethods(oldSource);
+
+        List<MethodInfo> newMethods =
+                parserAnalyzer.extractMethods(newSource);
+
+        MethodChangeDetector detector =
+                new MethodChangeDetector();
+
+        MethodChangeResult changeResult =
+                detector.detectChanges(oldMethods, newMethods);
+
+        TestImpactMapper testImpactMapper =
+                new TestImpactMapper();
+
         Set<String> impactedTests = new HashSet<>();
 
-        for (String changedMethod : changeResult.getModifiedMethods()) {
-            impactedTests.addAll(testImpactMapper.findTestsExercisingMethod(testSource, changedMethod));
+        for (String changedMethod :
+                changeResult.getModifiedMethods()) {
+
+            impactedTests.addAll(
+                    testImpactMapper.findTestsExercisingMethod(
+                            testSource,
+                            changedMethod));
         }
-        for (String changedMethod : changeResult.getAddedMethods()) {
-            impactedTests.addAll(testImpactMapper.findTestsExercisingMethod(testSource, changedMethod));
+
+        for (String changedMethod :
+                changeResult.getAddedMethods()) {
+
+            impactedTests.addAll(
+                    testImpactMapper.findTestsExercisingMethod(
+                            testSource,
+                            changedMethod));
         }
 
         return impactedTests;

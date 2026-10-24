@@ -1,12 +1,11 @@
 package com.analysis.tool.impact;
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.*;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Maps a changed method name to the set of test methods that exercise it,
@@ -19,13 +18,25 @@ public class TestImpactMapper {
      * returns the names of test methods whose body contains at least
      * one call to that method name.
      */
-    public Set<String> findTestsExercisingMethod(String testSourceCode, String changedMethodName) {
+    public Set<String> findTestsExercisingMethod(
+            String testSourceCode,
+            String changedMethodName) {
+
         Set<String> impactedTests = new HashSet<>();
 
-        CompilationUnit compilationUnit = StaticJavaParser.parse(testSourceCode);
-        for (MethodDeclaration method : compilationUnit.findAll(MethodDeclaration.class)) {
-            boolean callsChangedMethod = method.findAll(MethodCallExpr.class).stream()
-                    .anyMatch(call -> call.getNameAsString().equals(changedMethodName));
+        CompilationUnit compilationUnit =
+                StaticJavaParser.parse(testSourceCode);
+
+        for (MethodDeclaration method :
+                compilationUnit.findAll(MethodDeclaration.class)) {
+
+            boolean callsChangedMethod =
+                    method.findAll(MethodCallExpr.class)
+                            .stream()
+                            .anyMatch(call ->
+                                    call.getNameAsString()
+                                            .equals(changedMethodName));
+
             if (callsChangedMethod) {
                 impactedTests.add(method.getNameAsString());
             }

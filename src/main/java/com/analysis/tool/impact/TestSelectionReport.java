@@ -1,7 +1,6 @@
 package com.analysis.tool.impact;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Result of a test-selection run.

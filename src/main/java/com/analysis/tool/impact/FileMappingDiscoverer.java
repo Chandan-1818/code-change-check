@@ -1,8 +1,6 @@
 package com.analysis.tool.impact;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Derives source/test file pairs from a list of repository file paths,
