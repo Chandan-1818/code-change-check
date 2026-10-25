@@ -94,7 +94,25 @@ safety-fixes-v3.
 | G2 target discovery | Verified | TargetDiscoverer, DiscoveredMethod; mvn clean test output above |
 | G8 (part) discovery unit tests | Verified (7 tests) | TargetDiscovererTest |
 | G3 input generator and receiver builder | Written, not yet run | InputGenerator, ReceiverBuilder, InputGeneratorTest, ReceiverBuilderTest |
-| G4-G7 | Not started | none |
+| G4 oracle capture | Written, not yet run | CasePlanner, OracleCapture, OracleRuntime, OracleCase, OracleOutcome and their tests |
+| G5-G7 | Not started | none |
 
 Not yet verified: discovery against the real sample project sources (the unit
 tests use inline sources only).
+
+## G4 notes: oracle capture (version 1)
+
+- CasePlanner turns every supported method into OracleCases (receiver expression,
+  parameter types, argument expressions).
+- OracleCapture compiles the target sources plus a generated RtsOracleCases class
+  with the JDK compiler into a temporary directory and runs it in a separate JVM
+  TWICE (process timeout 120 s, per-case timeout 2 s). Outcomes that differ between
+  the two runs are NONDETERMINISTIC and are reported, not asserted.
+- Outcomes: RETURNED (value as a Java literal), THREW (exception class name only),
+  TIMED_OUT, CONSTRUCTION_FAILED, UNSUPPORTED_VALUE, NONDETERMINISTIC, NOT_RUN.
+- The target's System.out and System.err are silenced so they cannot corrupt the
+  result protocol. System.exit in target code ends the run early; unreported cases
+  become NOT_RUN.
+- Limits: target main sources must compile with the JDK alone; all target packages
+  are wildcard-imported; a compile error in any source fails the whole capture.
+  Target code is executed locally and is assumed to be trusted.
