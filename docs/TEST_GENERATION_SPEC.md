@@ -83,11 +83,17 @@ original behaviour is correct.
 
 ## Status of Phase 8B
 
+Verified on the author's machine on 2026-10-25 with `mvn clean test`:
+96 tests run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS (4 min). This
+includes TargetDiscovererTest: 7 tests run, 0 failures. Commit f493349 on branch
+safety-fixes-v3.
+
 | Task | Status | Evidence |
 |---|---|---|
-| G1 specification | Written | this file |
-| G2 target discovery | Written, not yet compiled or run | TargetDiscoverer, DiscoveredMethod |
-| G8 (part) discovery unit tests | Written, not yet run | TargetDiscovererTest |
+| G1 specification | Verified (document; input pools still to confirm with the guide) | this file |
+| G2 target discovery | Verified | TargetDiscoverer, DiscoveredMethod; mvn clean test output above |
+| G8 (part) discovery unit tests | Verified (7 tests) | TargetDiscovererTest |
 | G3-G7 | Not started | none |
 
-No item is Verified until mvn test output is captured on the author's machine.
+Not yet verified: discovery against the real sample project sources (the unit
+tests use inline sources only).
