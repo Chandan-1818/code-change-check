@@ -43,7 +43,7 @@ in version 1 because there is no return value to record.
 - Cases per method: cartesian product of the pools, capped at 12, taken in a
   fixed deterministic order.
 - Seed: 42. The same source must always give the same tests.
-- Constructor arguments for receivers use the first value of each pool.
+- Constructor arguments for receivers use the first non-null value of each pool (a null String would often fail in the constructor). A constructor that still throws is detected in G4.
 
 ## 4. Oracle capture (G4, planned)
 
@@ -93,7 +93,8 @@ safety-fixes-v3.
 | G1 specification | Verified (document; input pools still to confirm with the guide) | this file |
 | G2 target discovery | Verified | TargetDiscoverer, DiscoveredMethod; mvn clean test output above |
 | G8 (part) discovery unit tests | Verified (7 tests) | TargetDiscovererTest |
-| G3-G7 | Not started | none |
+| G3 input generator and receiver builder | Written, not yet run | InputGenerator, ReceiverBuilder, InputGeneratorTest, ReceiverBuilderTest |
+| G4-G7 | Not started | none |
 
 Not yet verified: discovery against the real sample project sources (the unit
 tests use inline sources only).
