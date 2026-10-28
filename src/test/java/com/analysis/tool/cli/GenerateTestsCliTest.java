@@ -89,8 +89,13 @@ class GenerateTestsCliTest {
         assertTrue(update.out.contains("Calculator.sub(int,int)"), update.out);
 
         Result again = runCli(repo, c2, "--previous=" + c1, "--project=demo", "--out=" + out);
-        assertEquals(2, again.exitCode, "a different existing suite must not be overwritten silently");
+        assertEquals(0, again.exitCode, "an identical rerun is accepted: " + again.err);
 
+        Path generated = outDir.resolve("demo").resolve(c2)
+                .resolve("src/test/java/rts/generated/CalculatorGeneratedTest.java");
+        Files.writeString(generated, Files.readString(generated) + "\n// tampered\n");
+        Result refused = runCli(repo, c2, "--previous=" + c1, "--project=demo", "--out=" + out);
+        assertEquals(2, refused.exitCode, "a different existing suite must not be overwritten silently");
         Result accepted = runCli(repo, c2, "--previous=" + c1, "--accept=Calculator#sub(int,int)",
                 "--project=demo", "--out=" + out);
         assertEquals(0, accepted.exitCode, accepted.err);
