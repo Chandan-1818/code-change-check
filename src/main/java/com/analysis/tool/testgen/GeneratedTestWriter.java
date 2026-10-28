@@ -51,6 +51,39 @@ public class GeneratedTestWriter {
         return directory;
     }
 
+    /**
+     * Explicit accept: overwrites the revision directory with the new output and
+     * deletes generated test files that are no longer part of it. Call only when
+     * the developer has accepted a behaviour change.
+     */
+    public Path replace(Path root, String project, String revision, TestEmitter.Result result)
+            throws IOException {
+        requireSafe("project", project);
+        requireSafe("revision", revision);
+
+        Path directory = root.resolve(project).resolve(revision);
+        Map<String, String> all = new TreeMap<>(result.getFiles());
+        all.put("manifest.json", result.getManifest());
+
+        Path generatedDir = directory.resolve(TestEmitter.TEST_DIRECTORY);
+        if (Files.isDirectory(generatedDir)) {
+            try (java.util.stream.Stream<Path> existing = Files.list(generatedDir)) {
+                for (Path file : (Iterable<Path>) existing::iterator) {
+                    String relative = TestEmitter.TEST_DIRECTORY + file.getFileName();
+                    if (!all.containsKey(relative)) {
+                        Files.delete(file);
+                    }
+                }
+            }
+        }
+        for (Map.Entry<String, String> entry : all.entrySet()) {
+            Path file = directory.resolve(entry.getKey());
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, entry.getValue(), StandardCharsets.UTF_8);
+        }
+        return directory;
+    }
+
     private static void requireSafe(String what, String value) {
         if (value == null || !SAFE_NAME.matcher(value).matches() || value.equals("..") || value.equals(".")) {
             throw new IllegalArgumentException("Unsafe " + what + " for a directory name: " + value);

@@ -1,6 +1,7 @@
 package com.analysis.tool.testgen;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +9,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Phase 8B / task G5: turns recorded oracle outcomes into JUnit 5 source and a
- * manifest. Pure: no file or process access, no timestamps, so the same input
- * always gives byte-identical output.
+ * Phase 8B / tasks G5 and G6: turns recorded oracle outcomes into JUnit 5 source
+ * and a manifest. Pure: no file or process access, no timestamps, so the same
+ * input always gives byte-identical output.
  *
  * One test class per target class (rts.generated.&lt;Class&gt;GeneratedTest). Only
  * RETURNED and THREW outcomes become tests; every other outcome is reported in
@@ -19,10 +20,14 @@ import java.util.TreeSet;
  * Test names are gen_&lt;Class&gt;_&lt;method&gt;_&lt;nn&gt;, where nn counts ALL planned cases
  * of that class and method name (dropped ones included) so that dropping a case
  * does not rename the others.
+ *
+ * Manifest schema 2 adds methodBodyHash (per test), a "methods" list of the
+ * supported methods with their hashes, per-test state, and a "retired" list.
  */
 public class TestEmitter {
 
-    public static final String GENERATOR_VERSION = "0.1.0";
+    public static final String GENERATOR_VERSION = "0.2.0";
+    public static final int SCHEMA_VERSION = 2;
     public static final String TEST_PACKAGE = "rts.generated";
     public static final String TEST_DIRECTORY = "src/test/java/rts/generated/";
 
@@ -51,15 +56,28 @@ public class TestEmitter {
 
     public Result emit(String project, String revision, List<DiscoveredMethod> discovered,
                        List<OracleCase> cases, List<OracleOutcome> outcomes) {
+        return emit(project, revision, discovered, cases, outcomes,
+                Collections.<String, String>emptyMap(), null, Collections.<String[]>emptyList());
+    }
+
+    /**
+     * @param hashes  MethodKey to body hash; a missing key is written as an empty hash
+     * @param states  one state per case (ACTIVE, BEHAVIOUR_CHANGED), or null for all ACTIVE
+     * @param retired entries {testMethod, retiredAtRevision}
+     */
+    public Result emit(String project, String revision, List<DiscoveredMethod> discovered,
+                       List<OracleCase> cases, List<OracleOutcome> outcomes,
+                       Map<String, String> hashes, List<String> states, List<String[]> retired) {
         if (cases.size() != outcomes.size()) {
             throw new IllegalArgumentException("cases (" + cases.size() + ") and outcomes ("
                     + outcomes.size() + ") differ in length");
         }
+        if (states != null && states.size() != cases.size()) {
+            throw new IllegalArgumentException("states and cases differ in length");
+        }
 
-        Map<String, String> packageOf = new HashMap<>();
         TreeSet<String> packages = new TreeSet<>();
         for (DiscoveredMethod method : discovered) {
-            packageOf.putIfAbsent(method.getClassName(), method.getPackageName());
             if (!method.getPackageName().isEmpty()) {
                 packages.add(method.getPackageName());
             }
@@ -86,8 +104,8 @@ public class TestEmitter {
             for (int index : entry.getValue()) {
                 OracleCase c = cases.get(index);
                 OracleOutcome o = outcomes.get(index);
-                String signature = signatureOf(c);
-                String signatureKey = className + "\t" + signature;
+                String signature = MethodKey.signature(c);
+                String signatureKey = MethodKey.of(className, signature);
                 int number = counters.merge(className + "." + c.getMethodName(), 1, Integer::sum);
                 String testName = String.format("gen_%s_%s_%02d", className, c.getMethodName(), number);
 
@@ -110,6 +128,7 @@ public class TestEmitter {
                 body.append("    }\n\n");
 
                 boolean threw = o.getStatus() == OracleOutcome.Status.THREW;
+                String state = states == null ? "ACTIVE" : states.get(index);
                 testEntries.add("    {\"testClass\": " + q(TEST_PACKAGE + "." + className + "GeneratedTest")
                         + ", \"testMethod\": " + q(testName)
                         + ", \"targetClass\": " + q(className)
@@ -117,7 +136,8 @@ public class TestEmitter {
                         + ", \"inputs\": " + array(c.getArgumentExpressions())
                         + ", \"expected\": {\"kind\": " + q(threw ? "EXCEPTION" : "RETURN")
                         + ", \"value\": " + q(o.getDetail()) + "}"
-                        + ", \"strength\": \"ASSERTED\", \"state\": \"ACTIVE\"}");
+                        + ", \"methodBodyHash\": " + q(hashes.getOrDefault(signatureKey, ""))
+                        + ", \"strength\": \"ASSERTED\", \"state\": " + q(state) + "}");
             }
 
             if (testsInClass > 0) {
@@ -137,9 +157,15 @@ public class TestEmitter {
             }
         }
 
+        Map<String, String> methodEntries = new TreeMap<>();
         List<String> skippedEntries = new ArrayList<>();
         for (DiscoveredMethod method : discovered) {
-            if (!method.isSupported()) {
+            if (method.isSupported()) {
+                String key = MethodKey.of(method.getClassName(), method.getSignature());
+                methodEntries.put(key, "    {\"targetClass\": " + q(method.getClassName())
+                        + ", \"targetSignature\": " + q(method.getSignature())
+                        + ", \"methodBodyHash\": " + q(hashes.getOrDefault(key, "")) + "}");
+            } else {
                 skippedEntries.add("    {\"targetClass\": " + q(method.getClassName())
                         + ", \"targetSignature\": " + q(method.getSignature())
                         + ", \"reason\": \"NOT_SUPPORTED\", \"detail\": " + q(method.getReason()) + "}");
@@ -155,25 +181,28 @@ public class TestEmitter {
             }
         }
 
+        List<String> retiredEntries = new ArrayList<>();
+        for (String[] r : retired) {
+            retiredEntries.add("    {\"testMethod\": " + q(r[0]) + ", \"retiredAtRevision\": " + q(r[1]) + "}");
+        }
+
         StringBuilder manifest = new StringBuilder();
         manifest.append("{\n");
-        manifest.append("  \"schemaVersion\": 1,\n");
+        manifest.append("  \"schemaVersion\": ").append(SCHEMA_VERSION).append(",\n");
         manifest.append("  \"generatorVersion\": ").append(q(GENERATOR_VERSION)).append(",\n");
         manifest.append("  \"seed\": ").append(InputGenerator.SEED).append(",\n");
         manifest.append("  \"caseCap\": ").append(InputGenerator.DEFAULT_CASE_CAP).append(",\n");
         manifest.append("  \"project\": ").append(q(project)).append(",\n");
         manifest.append("  \"revision\": ").append(q(revision)).append(",\n");
         manifest.append("  \"tests\": ").append(list(testEntries)).append(",\n");
+        manifest.append("  \"methods\": ").append(list(new ArrayList<>(methodEntries.values()))).append(",\n");
         manifest.append("  \"skipped\": ").append(list(skippedEntries)).append(",\n");
-        manifest.append("  \"droppedCases\": ").append(list(droppedEntries)).append("\n");
+        manifest.append("  \"droppedCases\": ").append(list(droppedEntries)).append(",\n");
+        manifest.append("  \"retired\": ").append(list(retiredEntries)).append("\n");
         manifest.append("}\n");
 
         return new Result(files, manifest.toString(), testEntries.size(), droppedEntries.size(),
                 skippedEntries.size());
-    }
-
-    private static String signatureOf(OracleCase c) {
-        return c.getMethodName() + "(" + String.join(",", c.getParameterTypes()) + ")";
     }
 
     private static String assertion(OracleCase c, OracleOutcome o) {
