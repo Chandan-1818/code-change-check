@@ -47,6 +47,12 @@ public class GeneratedSuiteRunner {
      *                       (contains src/test/java/rts/generated/*.java)
      */
     public Result run(String repoPath, String revision, Path generatedDir) throws Exception {
+        return run(repoPath, revision, generatedDir, false);
+    }
+
+    /** With stripManualTests the checkout's own src/test is deleted first, so only generated tests run. */
+    public Result run(String repoPath, String revision, Path generatedDir, boolean stripManualTests)
+            throws Exception {
         Path generatedSources = generatedDir.resolve("src/test/java/rts/generated");
         if (!Files.isDirectory(generatedSources)) {
             throw new IllegalArgumentException("No generated tests found at " + generatedSources);
@@ -66,6 +72,9 @@ public class GeneratedSuiteRunner {
                         + " does not declare junit-jupiter; generated JUnit 5 tests cannot run");
             }
 
+            if (stripManualTests) {
+                deleteRecursively(workDir.resolve("src/test"));
+            }
             Path destination = workDir.resolve("src/test/java/rts/generated");
             Files.createDirectories(destination);
             try (Stream<Path> files = Files.list(generatedSources)) {
