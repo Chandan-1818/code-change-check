@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class GitAnalyzerTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
+            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
 
     private static final String CALCULATOR_PATH =
             "src/main/java/com/sample/Calculator.java";

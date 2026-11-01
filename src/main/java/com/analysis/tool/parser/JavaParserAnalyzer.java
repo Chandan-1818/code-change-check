@@ -1,47 +1,76 @@
 package com.analysis.tool.parser;
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.body.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
- * Parses Java source and extracts method declarations.
+ * JavaParserAnalyzer parses Java source code and extracts structural
+ * information such as method declarations.
  *
- * Comments are removed before extraction, so comment-only edits are not
- * reported as method changes. Whitespace is already normalised because
- * body text comes from JavaParser's pretty printer, not the raw source.
+ * Supported operations (current scope):
+ * - Parsing a Java source string into an AST (CompilationUnit)
+ * - Extracting method names declared in that source
+ * - Extracting full MethodInfo (name + body text) for each method
+ *
+ * Not yet supported (future phases):
+ * - Field extraction, method call extraction, inheritance/interfaces
+ * - Comparing two versions of a file at the AST level (this belongs
+ *   to a future ImpactAnalyzer/comparison component, not this class)
  */
 public class JavaParserAnalyzer {
 
-    /** Parses source and strips every comment from the tree. */
-    public static CompilationUnit parseWithoutComments(String javaSourceCode) {
-        CompilationUnit cu = StaticJavaParser.parse(javaSourceCode);
-        for (Comment comment : cu.getAllContainedComments()) {
-            comment.remove();
-        }
-        return cu;
-    }
-
+    /**
+     * Parses the given Java source code and returns the names of all
+     * methods declared in it (across all classes/interfaces in the file).
+     */
     public List<String> extractMethodNames(String javaSourceCode) {
         List<String> methodNames = new ArrayList<>();
-        for (MethodDeclaration method : parseWithoutComments(javaSourceCode).findAll(MethodDeclaration.class)) {
+
+        CompilationUnit compilationUnit =
+                StaticJavaParser.parse(javaSourceCode);
+
+        List<MethodDeclaration> methods =
+                compilationUnit.findAll(MethodDeclaration.class);
+
+        for (MethodDeclaration method : methods) {
             methodNames.add(method.getNameAsString());
         }
+
         return methodNames;
     }
 
+    /**
+     * Parses the given Java source code and returns a MethodInfo for each
+     * method declared in it, containing the method's name and its body
+     * text (as written in the source, including whitespace/formatting).
+     *
+     * If a method has no body (e.g. an abstract or interface method),
+     * its bodyText will be an empty string.
+     */
     public List<MethodInfo> extractMethods(String javaSourceCode) {
         List<MethodInfo> methods = new ArrayList<>();
-        for (MethodDeclaration declaration : parseWithoutComments(javaSourceCode).findAll(MethodDeclaration.class)) {
-            String bodyText = declaration.getBody().map(Object::toString).orElse("");
-            String header = declaration.getAnnotations().toString()
-                    + " " + declaration.getDeclarationAsString(true, true, true);
-            methods.add(new MethodInfo(declaration.getNameAsString(), bodyText, header));
+
+        CompilationUnit compilationUnit =
+                StaticJavaParser.parse(javaSourceCode);
+
+        List<MethodDeclaration> declarations =
+                compilationUnit.findAll(MethodDeclaration.class);
+
+        for (MethodDeclaration declaration : declarations) {
+            String name = declaration.getNameAsString();
+
+            Optional<com.github.javaparser.ast.stmt.BlockStmt> body =
+                    declaration.getBody();
+
+            String bodyText =
+                    body.map(Object::toString).orElse("");
+
+            methods.add(new MethodInfo(name, bodyText));
         }
+
         return methods;
     }
 }
