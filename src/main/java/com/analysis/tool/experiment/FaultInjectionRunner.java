@@ -34,6 +34,12 @@ import java.util.stream.*;
  *   NOT_DETECTED_BY_SUITE - no test fails at all, so the fault is invisible to
  *                           the project's own suite (a test-coverage gap, not
  *                           a selection error).
+ *   SKIPPED               - the fault could not be injected at the base
+ *                           revision (its file is absent, or its find-text does
+ *                           not occur exactly once). It is recorded rather than
+ *                           thrown so that one stale fault cannot abort the
+ *                           whole experiment, and it never enters a
+ *                           precision/recall denominator.
  *
  * Precision here is a conservative proxy: the share of selected tests that
  * actually fail under the fault. A selected test that still passes may be
@@ -42,7 +48,7 @@ import java.util.stream.*;
  */
 public class FaultInjectionRunner {
 
-    public enum Outcome { CAUGHT, MISSED, NOT_DETECTED_BY_SUITE }
+    public enum Outcome { CAUGHT, MISSED, NOT_DETECTED_BY_SUITE, SKIPPED }
 
     public static class Fault {
         private final String method;
@@ -72,6 +78,7 @@ public class FaultInjectionRunner {
         private final Set<String> selectedTests;
         private final Set<String> failingTests;
         private final Outcome outcome;
+        private final String detail;
 
         public FaultResult(Fault fault, String mutantCommit, Set<String> selectedTests, Set<String> failingTests) {
             this.fault = fault;
@@ -79,6 +86,24 @@ public class FaultInjectionRunner {
             this.selectedTests = new TreeSet<>(selectedTests);
             this.failingTests = new TreeSet<>(failingTests);
             this.outcome = classify(this.selectedTests, this.failingTests);
+            this.detail = null;
+        }
+
+        private FaultResult(Fault fault, String detail) {
+            this.fault = fault;
+            this.mutantCommit = null;
+            this.selectedTests = new TreeSet<>();
+            this.failingTests = new TreeSet<>();
+            this.outcome = Outcome.SKIPPED;
+            this.detail = detail;
+        }
+
+        /**
+         * Records a fault that could not be injected at the checked-out
+         * revision, instead of failing the whole run.
+         */
+        public static FaultResult skipped(Fault fault, String reason) {
+            return new FaultResult(fault, reason);
         }
 
         public Fault getFault() { return fault; }
@@ -86,6 +111,8 @@ public class FaultInjectionRunner {
         public Set<String> getSelectedTests() { return selectedTests; }
         public Set<String> getFailingTests() { return failingTests; }
         public Outcome getOutcome() { return outcome; }
+        /** The reason a SKIPPED fault was not injected; null for every other outcome. */
+        public String getDetail() { return detail; }
 
         public int getCaughtCount() {
             int caught = 0;
@@ -103,6 +130,44 @@ public class FaultInjectionRunner {
             return Outcome.NOT_DETECTED_BY_SUITE;
         }
         return selectedTests.containsAll(failingTests) ? Outcome.CAUGHT : Outcome.MISSED;
+    }
+
+    /**
+     * Index of the single occurrence of {@code needle} in {@code text}, or -1
+     * when it is absent or occurs more than once. A single exact replacement
+     * needs exactly one occurrence, so both failures are reported the same way.
+     */
+    static int singleOccurrence(String text, String needle) {
+        if (needle.isEmpty()) {
+            return -1;
+        }
+        int first = text.indexOf(needle);
+        if (first < 0 || text.indexOf(needle, first + 1) >= 0) {
+            return -1;
+        }
+        return first;
+    }
+
+    /**
+     * Explains why {@code fault} cannot be injected into {@code repoRoot}, or
+     * returns null when it can. Shared by every fault-injection harness so a
+     * fault that no longer applies to the checked-out revision is reported
+     * consistently instead of aborting the run.
+     */
+    static String injectionProblem(Path repoRoot, Fault fault) {
+        Path file = repoRoot.resolve(fault.getFile());
+        if (!Files.isRegularFile(file)) {
+            return "the fault file is not present at the base revision: " + fault.getFile();
+        }
+        String original;
+        try {
+            original = Files.readString(file, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return "the fault file could not be read: " + fault.getFile() + " (" + e + ")";
+        }
+        return singleOccurrence(original, fault.getFind()) < 0
+                ? "mutation text is not present exactly once in " + fault.getFile()
+                : null;
     }
 
     public static List<Fault> sampleProjectFaults() {
@@ -143,16 +208,16 @@ public class FaultInjectionRunner {
             List<FaultResult> results = new ArrayList<>();
 
             for (Fault fault : faults) {
-                git.checkout().setName(baseRevision).setForce(true).call();
+                git.checkout().setName(baseRevision).setForced(true).call();
                 deleteRecursively(workDir.resolve("target"));
 
                 Path file = workDir.resolve(fault.getFile());
-                String original = Files.readString(file, StandardCharsets.UTF_8);
-                int first = original.indexOf(fault.getFind());
-                if (first < 0 || original.indexOf(fault.getFind(), first + 1) >= 0) {
-                    throw new IllegalStateException("Fault text must occur exactly once in "
-                            + fault.getFile() + ": " + fault.getFind());
+                String problem = injectionProblem(workDir, fault);
+                if (problem != null) {
+                    results.add(FaultResult.skipped(fault, problem));
+                    continue;
                 }
+                String original = Files.readString(file, StandardCharsets.UTF_8);
                 Files.writeString(file, original.replace(fault.getFind(), fault.getReplace()),
                         StandardCharsets.UTF_8);
 
@@ -224,7 +289,7 @@ public class FaultInjectionRunner {
               .append(" | ").append(r.getFault().getMutation())
               .append(" | ").append(join(r.getSelectedTests()))
               .append(" | ").append(join(r.getFailingTests()))
-              .append(" | ").append(r.getOutcome())
+              .append(" | ").append(outcomeText(r))
               .append(" | ").append(percent(r.getCaughtCount(), r.getSelectedTests().size()))
               .append(" | ").append(percent(r.getCaughtCount(), r.getFailingTests().size()))
               .append(" |\n");
@@ -232,21 +297,33 @@ public class FaultInjectionRunner {
         return sb.toString();
     }
 
+    /** SKIPPED rows carry their reason, so the table alone explains the skip. */
+    private static String outcomeText(FaultResult result) {
+        return result.getDetail() == null
+                ? result.getOutcome().name()
+                : result.getOutcome().name() + " (" + result.getDetail() + ")";
+    }
+
     public static String summary(List<FaultResult> results) {
         int caught = 0;
         int missed = 0;
         int notDetected = 0;
+        int skipped = 0;
         for (FaultResult r : results) {
-            if (r.getOutcome() == Outcome.CAUGHT) {
-                caught++;
-            } else if (r.getOutcome() == Outcome.MISSED) {
-                missed++;
-            } else {
-                notDetected++;
+            switch (r.getOutcome()) {
+                case CAUGHT -> caught++;
+                case MISSED -> missed++;
+                case SKIPPED -> skipped++;
+                default -> notDetected++;
             }
         }
-        return "Faults injected: " + results.size() + "; caught: " + caught + "; missed: " + missed
-                + "; not detected by the suite: " + notDetected;
+        StringBuilder sb = new StringBuilder("Faults injected: " + results.size()
+                + "; caught: " + caught + "; missed: " + missed
+                + "; not detected by the suite: " + notDetected);
+        if (skipped > 0) {
+            sb.append("; skipped (not injectable at this revision): ").append(skipped);
+        }
+        return sb.toString();
     }
 
     private static String percent(int numerator, int denominator) {

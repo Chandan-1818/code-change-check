@@ -1,7 +1,11 @@
 package com.analysis.tool.experiment;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +14,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -21,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FaultInjectionRunnerTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
     private static final String VERSION_8_COMMIT = "ebec3c0";
 
     @Test
@@ -53,6 +58,67 @@ public class FaultInjectionRunnerTest {
                 "Actual markdown:\n" + markdown);
         assertEquals("Faults injected: 2; caught: 1; missed: 0; not detected by the suite: 1",
                 FaultInjectionRunner.summary(List.of(caught, undetected)));
+    }
+
+    @Test
+    public void shouldLocateOnlyASingleOccurrence() {
+        assertEquals(4, FaultInjectionRunner.singleOccurrence("int a = 1;", "a"));
+        assertEquals(-1, FaultInjectionRunner.singleOccurrence("int a = 1; int a = 2;", "a"),
+                "a text that occurs twice cannot be replaced unambiguously");
+        assertEquals(-1, FaultInjectionRunner.singleOccurrence("int a = 1;", "b"));
+        assertEquals(0, FaultInjectionRunner.singleOccurrence("int a = 1;", "int a = 1;"));
+        assertEquals(-1, FaultInjectionRunner.singleOccurrence("int a = 1;", ""),
+                "an empty needle occurs everywhere, never exactly once");
+    }
+
+    @Test
+    public void shouldExplainWhyAFaultCannotBeInjected(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("src/main/java/com/sample/Calculator.java");
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "int x = 1;\nint y = 2;\n", StandardCharsets.UTF_8);
+
+        assertNull(FaultInjectionRunner.injectionProblem(dir, new FaultInjectionRunner.Fault(
+                        "Calculator.x", "x", "src/main/java/com/sample/Calculator.java", "int x = 1;", "int x = 2;")),
+                "an injectable fault must report no problem");
+
+        assertEquals("the fault file is not present at the base revision: src/main/java/com/sample/Missing.java",
+                FaultInjectionRunner.injectionProblem(dir, new FaultInjectionRunner.Fault(
+                        "Missing.m", "m", "src/main/java/com/sample/Missing.java", "x", "y")),
+                "a file removed at a later revision must be reported, not thrown");
+
+        assertTrue(FaultInjectionRunner.injectionProblem(dir, new FaultInjectionRunner.Fault(
+                        "Calculator.x", "x", "src/main/java/com/sample/Calculator.java", "int x = 9;", "int x = 2;"))
+                        .contains("not present exactly once"),
+                "absent mutation text must be reported");
+
+        assertTrue(FaultInjectionRunner.injectionProblem(dir, new FaultInjectionRunner.Fault(
+                        "Calculator.x", "x", "src/main/java/com/sample/Calculator.java", "int", "long"))
+                        .contains("not present exactly once"),
+                "ambiguous mutation text must be reported");
+    }
+
+    @Test
+    public void shouldRecordAnUninjectableFaultAsSkipped() {
+        FaultInjectionRunner.Fault fault = new FaultInjectionRunner.Fault(
+                "Calculator.compute", "result + 1", "Calculator.java", "return a + b;", "return a + b + 1;");
+        FaultInjectionRunner.FaultResult skipped = FaultInjectionRunner.FaultResult.skipped(
+                fault, "the fault file is not present at the base revision: Calculator.java");
+        FaultInjectionRunner.FaultResult caught = new FaultInjectionRunner.FaultResult(
+                fault, "abc1234", Set.of("testA"), Set.of("testA"));
+
+        assertEquals(FaultInjectionRunner.Outcome.SKIPPED, skipped.getOutcome());
+        assertNull(skipped.getMutantCommit());
+        assertTrue(skipped.getSelectedTests().isEmpty());
+        assertTrue(skipped.getFailingTests().isEmpty());
+        assertNull(caught.getDetail(), "only a skipped fault carries a reason");
+
+        String markdown = FaultInjectionRunner.toMarkdown(List.of(skipped, caught));
+        assertTrue(markdown.contains(
+                        "| SKIPPED (the fault file is not present at the base revision: Calculator.java) | n/a | n/a |"),
+                "Actual markdown:\n" + markdown);
+        assertEquals("Faults injected: 2; caught: 1; missed: 0; not detected by the suite: 0"
+                        + "; skipped (not injectable at this revision): 1",
+                FaultInjectionRunner.summary(List.of(skipped, caught)));
     }
 
     @Test

@@ -1,0 +1,207 @@
+Command : mvn -B clean test
+Date    : 2026-11-01
+Commit  : 1e40736 + audit fixes (working tree, uncommitted at run time)
+JDK     : openjdk version "23.0.2" 2025-01-21
+mvn exit code: 0
+Source  : 47 main, 60 test source files compiled
+Audit fixes under this run:
+  - FaultInjectionRunner: a fault that cannot be injected (file absent at the
+    base revision, or find-text not present exactly once) is recorded as
+    SKIPPED with its reason instead of throwing and aborting the whole run.
+  - FaultInjectionRunner + FaultDetectionExperiment share one guard,
+    FaultInjectionRunner.injectionProblem(Path, Fault).
+  - Deprecated JGit CheckoutCommand.setForce(boolean) replaced by setForced(boolean)
+    at 4 call sites (GeneratedSuiteRunner, FaultInjectionRunner, FaultDetectionExperiment x2);
+    mvn -B clean compile -Dmaven.compiler.showDeprecation=true is now warning-free.
+--- output follows ---
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.analysis.tool.AppTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.analysis.tool.AppTest
+[INFO] Running com.analysis.tool.cli.GenerateTestsCliRealHistoryTest
+Repository     : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Revision       : d85a3b7
+Project        : sample
+Mode           : initial
+Sources        : 11 production file(s)
+Generated tests: 98
+Skipped methods: 5 (reasons are in the manifest)
+Dropped cases  : 0
+Written to     : C:\Users\lenov\AppData\Local\Temp\junit15750002214083679689\sample\d85a3b7
+
+Repository     : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Revision       : efc30d0
+Project        : sample
+Mode           : incremental from d85a3b7
+Sources        : 11 production file(s)
+Modified methods (1):
+  - TaxCalculator.calculateTax(int)
+Unchanged      : 12 method(s)
+Generated tests: 98
+Skipped methods: 5 (reasons are in the manifest)
+Dropped cases  : 0
+Written to     : C:\Users\lenov\AppData\Local\Temp\junit15750002214083679689\sample\efc30d0
+WARNING - BEHAVIOUR_CHANGED: old expected values kept, these tests fail until accepted (1):
+  - TaxCalculator.calculateTax(int)
+
+Repository     : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Revision       : 3337a0b
+Project        : sample
+Mode           : incremental from efc30d0
+Sources        : 11 production file(s)
+Added methods (1):
+  - CheckoutService.quote(String,int)
+Unchanged      : 13 method(s)
+Generated tests: 110
+Skipped methods: 5 (reasons are in the manifest)
+Dropped cases  : 0
+Written to     : C:\Users\lenov\AppData\Local\Temp\junit15750002214083679689\sample\3337a0b
+
+Repository     : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Revision       : 7059f4c
+Project        : sample
+Mode           : incremental from 3337a0b
+Sources        : 11 production file(s)
+Removed methods (tests retired) (1):
+  - Calculator.compute(int,int)
+Unchanged      : 13 method(s)
+Generated tests: 98
+Skipped methods: 5 (reasons are in the manifest)
+Dropped cases  : 0
+Written to     : C:\Users\lenov\AppData\Local\Temp\junit15750002214083679689\sample\7059f4c
+
+V14 run: TestRunResult{totalTests=116, passed=113, failed=3, skipped=0, executionTimeMillis=5616, buildSucceeded=false, compilationFailed=false}; failing generated tests: [gen_TaxCalculator_calculateTax_02, gen_TaxCalculator_calculateTax_05, gen_TaxCalculator_calculateTax_04]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.97 s -- in com.analysis.tool.cli.GenerateTestsCliRealHistoryTest
+[INFO] Running com.analysis.tool.cli.GenerateTestsCliTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.197 s -- in com.analysis.tool.cli.GenerateTestsCliTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliAutoDiscoverTempRepoTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.345 s -- in com.analysis.tool.cli.SelectTestsCliAutoDiscoverTempRepoTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliAutoDiscoverTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.165 s -- in com.analysis.tool.cli.SelectTestsCliAutoDiscoverTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliExecuteTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.491 s -- in com.analysis.tool.cli.SelectTestsCliExecuteTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliGeneratedTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.371 s -- in com.analysis.tool.cli.SelectTestsCliGeneratedTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliRemovedTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.193 s -- in com.analysis.tool.cli.SelectTestsCliRemovedTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.049 s -- in com.analysis.tool.cli.SelectTestsCliTest
+[INFO] Running com.analysis.tool.cli.SelectTestsCliWarningTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.067 s -- in com.analysis.tool.cli.SelectTestsCliWarningTest
+[INFO] Running com.analysis.tool.execution.TestRunnerIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.31 s -- in com.analysis.tool.execution.TestRunnerIntegrationTest
+[INFO] Running com.analysis.tool.experiment.ExperimentCliExecuteTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.435 s -- in com.analysis.tool.experiment.ExperimentCliExecuteTest
+[INFO] Running com.analysis.tool.experiment.ExperimentCliTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.425 s -- in com.analysis.tool.experiment.ExperimentCliTest
+[INFO] Running com.analysis.tool.experiment.ExperimentExecutorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.751 s -- in com.analysis.tool.experiment.ExperimentExecutorTest
+[INFO] Running com.analysis.tool.experiment.ExperimentRunnerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.182 s -- in com.analysis.tool.experiment.ExperimentRunnerTest
+[INFO] Running com.analysis.tool.experiment.FaultDetectionExperimentTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.122 s -- in com.analysis.tool.experiment.FaultDetectionExperimentTest
+[INFO] Running com.analysis.tool.experiment.FaultInjectionGrownSampleTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 91.58 s -- in com.analysis.tool.experiment.FaultInjectionGrownSampleTest
+[INFO] Running com.analysis.tool.experiment.FaultInjectionRunnerTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 45.53 s -- in com.analysis.tool.experiment.FaultInjectionRunnerTest
+[INFO] Running com.analysis.tool.experiment.GeneratedSuiteRunnerIntegrationTest
+Generated tests: 98; skipped: 5; suite run: TestRunResult{totalTests=115, passed=115, failed=0, skipped=0, executionTimeMillis=5806, buildSucceeded=true, compilationFailed=false}
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.529 s -- in com.analysis.tool.experiment.GeneratedSuiteRunnerIntegrationTest
+[INFO] Running com.analysis.tool.experiment.LargerSampleHistoryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.848 s -- in com.analysis.tool.experiment.LargerSampleHistoryTest
+[INFO] Running com.analysis.tool.experiment.NoExistingTestsProofTest
+Static reachability coverage at V16 (production methods: 18)
+  no tests            : 0
+  hand-written only   : 15  uncovered=[App.main, Calculator.negate, CheckoutService.quote]
+  generated only      : 15  uncovered=[App.main, InventoryRepository.setStock, InventoryService.restock]
+  hand-written + gen. : 17  uncovered=[App.main]
+  generated tests: 98; skipped methods: 5
+  stripped run: TestRunResult{totalTests=98, passed=98, failed=0, skipped=0, executionTimeMillis=5604, buildSucceeded=true, compilationFailed=false}
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.493 s -- in com.analysis.tool.experiment.NoExistingTestsProofTest
+[INFO] Running com.analysis.tool.git.GitAnalyzerListFilesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.059 s -- in com.analysis.tool.git.GitAnalyzerListFilesTest
+[INFO] Running com.analysis.tool.git.GitAnalyzerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.analysis.tool.git.GitAnalyzerTest
+[INFO] Running com.analysis.tool.graph.DependencyGraphBuilderIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.analysis.tool.graph.DependencyGraphBuilderIntegrationTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerDeletedFileIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.284 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerDeletedFileIntegrationTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerExtraTestSourcesTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.299 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerExtraTestSourcesTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerIdentifierIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerIdentifierIntegrationTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.057 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerIntegrationTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerNonMethodChangeTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.210 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerNonMethodChangeTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerOrderIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.096 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerOrderIntegrationTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerReportIntegrationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerReportIntegrationTest
+[INFO] Running com.analysis.tool.impact.ChangeImpactAnalyzerTransitiveIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.analysis.tool.impact.ChangeImpactAnalyzerTransitiveIntegrationTest
+[INFO] Running com.analysis.tool.impact.FileMappingDiscovererTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.analysis.tool.impact.FileMappingDiscovererTest
+[INFO] Running com.analysis.tool.impact.ImpactAnalyzerIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.analysis.tool.impact.ImpactAnalyzerIntegrationTest
+[INFO] Running com.analysis.tool.impact.ImpactAnalyzerTransitiveTestSelectionIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.analysis.tool.impact.ImpactAnalyzerTransitiveTestSelectionIntegrationTest
+[INFO] Running com.analysis.tool.impact.MethodChangeDetectorIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.analysis.tool.impact.MethodChangeDetectorIntegrationTest
+[INFO] Running com.analysis.tool.impact.MethodChangeDetectorSafetyTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.analysis.tool.impact.MethodChangeDetectorSafetyTest
+[INFO] Running com.analysis.tool.impact.NonMethodChangeDetectorTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.analysis.tool.impact.NonMethodChangeDetectorTest
+[INFO] Running com.analysis.tool.impact.TestImpactMapperGapIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.analysis.tool.impact.TestImpactMapperGapIntegrationTest
+[INFO] Running com.analysis.tool.impact.TestImpactMapperIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.analysis.tool.impact.TestImpactMapperIntegrationTest
+[INFO] Running com.analysis.tool.metrics.EvaluationMetricsIntegrationTest
+Observed time reduction (informational only, not asserted): 19.687319050376377% -- full=5181ms, selected=4161ms
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.506 s -- in com.analysis.tool.metrics.EvaluationMetricsIntegrationTest
+[INFO] Running com.analysis.tool.metrics.StaticCoverageTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.analysis.tool.metrics.StaticCoverageTest
+[INFO] Running com.analysis.tool.parser.JavaParserAnalyzerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.analysis.tool.parser.JavaParserAnalyzerTest
+[INFO] Running com.analysis.tool.testgen.CasePlannerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.analysis.tool.testgen.CasePlannerTest
+[INFO] Running com.analysis.tool.testgen.GeneratedTestWriterReplaceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in com.analysis.tool.testgen.GeneratedTestWriterReplaceTest
+[INFO] Running com.analysis.tool.testgen.GeneratedTestWriterTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.analysis.tool.testgen.GeneratedTestWriterTest
+[INFO] Running com.analysis.tool.testgen.IncrementalGeneratorTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 s -- in com.analysis.tool.testgen.IncrementalGeneratorTest
+[INFO] Running com.analysis.tool.testgen.IncrementalPlannerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.analysis.tool.testgen.IncrementalPlannerTest
+[INFO] Running com.analysis.tool.testgen.InputGeneratorTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.analysis.tool.testgen.InputGeneratorTest
+[INFO] Running com.analysis.tool.testgen.ManifestReaderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.analysis.tool.testgen.ManifestReaderTest
+[INFO] Running com.analysis.tool.testgen.MethodHasherTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.analysis.tool.testgen.MethodHasherTest
+[INFO] Running com.analysis.tool.testgen.OracleCaptureTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.961 s -- in com.analysis.tool.testgen.OracleCaptureTest
+[INFO] Running com.analysis.tool.testgen.OracleRuntimeTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.236 s -- in com.analysis.tool.testgen.OracleRuntimeTest
+[INFO] Running com.analysis.tool.testgen.ReceiverBuilderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.analysis.tool.testgen.ReceiverBuilderTest
+[INFO] Running com.analysis.tool.testgen.TargetDiscovererTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.analysis.tool.testgen.TargetDiscovererTest
+[INFO] Running com.analysis.tool.testgen.TestEmitterTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.analysis.tool.testgen.TestEmitterTest
+[INFO] Running com.analysis.tool.testgen.TestGeneratorTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.031 s -- in com.analysis.tool.testgen.TestGeneratorTest
+[INFO] Running com.analysis.tool.testsupport.SamplePathsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.analysis.tool.testsupport.SamplePathsTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 194, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  03:48 min
+[INFO] Finished at: 2026-11-01T22:47:30+05:30
+[INFO] ------------------------------------------------------------------------

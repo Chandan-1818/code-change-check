@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LargerSampleHistoryTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
 
     private static final List<String> REVISIONS = Arrays.asList(
             "ebec3c0", "7b79d9c", "52db174", "2a36954", "bee1bf5",

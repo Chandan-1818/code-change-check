@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ExperimentCliTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
 
     private static final String[] REVISIONS = {
             "f2493c2", "9ed64fa", "7584402", "a3d0163",

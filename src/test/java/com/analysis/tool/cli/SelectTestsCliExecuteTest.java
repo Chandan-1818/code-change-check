@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SelectTestsCliExecuteTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
 
     private static final String VERSION_8_COMMIT = "ebec3c0";
 

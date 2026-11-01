@@ -133,6 +133,23 @@ public class ChangeImpactAnalyzer {
             String newRevision,
             List<FileMapping> fileMappings) throws Exception {
 
+        return analyzeTransitively(repoPath, oldRevision, newRevision, fileMappings,
+                Collections.<String>emptyList());
+    }
+
+    /**
+     * Same as the 4-argument form, plus extra test sources that are not in the
+     * repository (for example generated tests kept under generated-tests/).
+     * Their @Test methods become test nodes in the combined graph, so a changed
+     * method reached only by such a test is selected and not reported untested.
+     */
+    public TestSelectionReport analyzeTransitively(
+            String repoPath,
+            String oldRevision,
+            String newRevision,
+            List<FileMapping> fileMappings,
+            List<String> extraTestSources) throws Exception {
+
         GitAnalyzer gitAnalyzer = new GitAnalyzer(repoPath);
 
         try {
@@ -197,6 +214,13 @@ public class ChangeImpactAnalyzer {
                 allSources.add(testSource);
 
                 collectTestNodes(testSource, testNodes);
+            }
+
+            if (extraTestSources != null) {
+                for (String extraSource : extraTestSources) {
+                    allSources.add(extraSource);
+                    collectTestNodes(extraSource, testNodes);
+                }
             }
 
             DependencyGraph graph =
