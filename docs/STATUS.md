@@ -21,7 +21,7 @@ executes it and passes. Passing tests do not close a gap in the gap register.
 | Fault injection (9 at V8, 17 at V16) | VERIFIED for zero MISSED on these faults | FaultInjectionRunnerTest, FaultInjectionGrownSampleTest | single-line faults only, GAP-17 |
 | G8 fault-detection gain (two arms) | VERIFIED on the sample (V16) | FaultDetectionExperimentTest, docs/verification/2026-11-01-g8-experiment.txt, experiments/fault-detection-report.md | single-line faults only (GAP-17); coverage is static reachability, not runtime |
 | Sample path configurable | VERIFIED | SamplePathsTest | GAP-18 closed |
-| Phase 8B test generation | IN PROGRESS | see below | G8, TestSourceProvider |
+| Phase 8B test generation | IN PROGRESS | see below | TestSourceProvider |
 | Preflight, selection confidence | NOT STARTED | none | GAP-12 |
 | Backend, database, dashboard, report | NOT STARTED | none | GAP-26 |
 
