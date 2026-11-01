@@ -1,0 +1,59 @@
+# G8 fault-detection report
+
+Base revision: 7059f4c
+
+Environment  : java.version=23.0.2, java.vm=23.0.2+9, os=Windows 11 10.0; Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+
+Baseline     : tests=17, passed=17, failed=0, skipped=0, buildSucceeded=true, compilationFailed=false
+
+## Suites
+
+Manual suite at the base revision : 17 test(s)
+
+Generated suite                   : 98 test(s)
+
+## Coverage
+
+Kind: static reachability (reverse call-graph reachability, NOT runtime line/branch coverage).
+
+Production methods          : 18
+
+Reached by the manual suite : 15 (83.33%)
+
+Reached with the generated suite: 17 (94.44%)
+
+Newly reached methods       : Calculator.negate, CheckoutService.quote
+
+## Mutation score
+
+Mutations          : 17
+
+Supported mutations: 17
+
+Skipped mutations  : 0
+
+Manual only        : DETECTED=15, UNDETECTED=2, INVALID=0, INCONCLUSIVE=0; mutation score=15/17=0.8824
+
+Manual + generated : DETECTED=16, UNDETECTED=1, INVALID=0, INCONCLUSIVE=0; mutation score=16/17=0.9412
+
+| Fault | Mutation | Manual only | Manual + generated | Additional detection |
+|---|---|---|---|---|
+| Calculator.add | a + b -> a - b | DETECTED (testAdd) | DETECTED (gen_Calculator_add_02, gen_Calculator_add_03, gen_Calculator_add_04, gen_Calculator_add_05, gen_Calculator_add_07, gen_Calculator_add_09, gen_Calculator_add_11, gen_Calculator_add_12, testAdd) | no |
+| Calculator.subtract | a - b -> a + b | DETECTED (testSubtract) | DETECTED (gen_Calculator_subtract_02, gen_Calculator_subtract_03, gen_Calculator_subtract_04, gen_Calculator_subtract_05, gen_Calculator_subtract_07, gen_Calculator_subtract_09, gen_Calculator_subtract_11, gen_Calculator_subtract_12, testSubtract) | no |
+| Calculator.negate | -a -> a | UNDETECTED | DETECTED (gen_Calculator_negate_02, gen_Calculator_negate_03, gen_Calculator_negate_04, gen_Calculator_negate_05) | yes |
+| Multiplier.multiply | a * b -> a + b | DETECTED (testCalculateTax, testCheckout, testFinalPrice, testMultiply) | DETECTED (gen_Multiplier_multiply_02, gen_Multiplier_multiply_03, gen_Multiplier_multiply_04, gen_Multiplier_multiply_05, gen_Multiplier_multiply_06, gen_Multiplier_multiply_07, gen_Multiplier_multiply_08, gen_Multiplier_multiply_09, gen_Multiplier_multiply_10, gen_Multiplier_multiply_11, gen_Multiplier_multiply_12, gen_PricingService_finalPrice_05, gen_TaxCalculator_calculateTax_05, testCalculateTax, testCheckout, testFinalPrice, testMultiply) | no |
+| OrderRepository.save | stores total + 1 | DETECTED (testCheckout, testPlaceOrder, testSaveAndFindTotal) | DETECTED (testCheckout, testPlaceOrder, testSaveAndFindTotal) | no |
+| OrderRepository.findTotal | returns total + 1 | DETECTED (testCheckout, testPlaceOrder, testSaveAndFindTotal) | DETECTED (testCheckout, testPlaceOrder, testSaveAndFindTotal) | no |
+| OrderService.placeOrder | saves total + 1 | DETECTED (testCheckout, testPlaceOrder) | DETECTED (testCheckout, testPlaceOrder) | no |
+| OrderService.getOrderTotal | returns total + 1 | DETECTED (testCheckout, testCheckoutOutOfStock, testPlaceOrder) | DETECTED (gen_OrderService_getOrderTotal_01, gen_OrderService_getOrderTotal_02, gen_OrderService_getOrderTotal_03, gen_OrderService_getOrderTotal_04, gen_OrderService_getOrderTotal_05, testCheckout, testCheckoutOutOfStock, testPlaceOrder) | no |
+| TaxCalculator.calculateTax | result + 1 | DETECTED (testCalculateTax, testCalculateTaxOnZeroAmount, testCheckout, testFinalPrice, testFinalPriceOnZeroAmount) | DETECTED (gen_PricingService_finalPrice_01, gen_PricingService_finalPrice_03, gen_PricingService_finalPrice_05, gen_TaxCalculator_calculateTax_01, gen_TaxCalculator_calculateTax_03, testCalculateTax, testCalculateTaxOnZeroAmount, testCheckout, testFinalPrice, testFinalPriceOnZeroAmount) | no |
+| DiscountPolicy.applyDiscount | result + 1 | DETECTED (testApplyDiscount, testApplyDiscountOnZeroAmount, testCheckout, testFinalPrice, testFinalPriceOnZeroAmount) | DETECTED (gen_DiscountPolicy_applyDiscount_01, gen_DiscountPolicy_applyDiscount_02, gen_DiscountPolicy_applyDiscount_03, gen_DiscountPolicy_applyDiscount_04, gen_DiscountPolicy_applyDiscount_05, gen_PricingService_finalPrice_01, gen_PricingService_finalPrice_02, gen_PricingService_finalPrice_03, gen_PricingService_finalPrice_04, gen_PricingService_finalPrice_05, testApplyDiscount, testApplyDiscountOnZeroAmount, testCheckout, testFinalPrice, testFinalPriceOnZeroAmount) | no |
+| PricingService.finalPrice | tax dropped | DETECTED (testCheckout, testFinalPrice) | DETECTED (gen_PricingService_finalPrice_02, gen_PricingService_finalPrice_04, gen_PricingService_finalPrice_05, testCheckout, testFinalPrice) | no |
+| InventoryRepository.setStock | stores quantity + 1 | DETECTED (testRestockAndAvailable, testSetAndGetStock) | DETECTED (testRestockAndAvailable, testSetAndGetStock) | no |
+| InventoryRepository.getStock | returns quantity + 1 | DETECTED (testRestockAndAvailable, testSetAndGetStock) | DETECTED (testRestockAndAvailable, testSetAndGetStock) | no |
+| InventoryService.restock | restocks quantity + 1 | DETECTED (testRestockAndAvailable) | DETECTED (testRestockAndAvailable) | no |
+| InventoryService.available | returns stock + 1 | DETECTED (testCheckoutOutOfStock, testRestockAndAvailable) | DETECTED (gen_CheckoutService_checkout_01, gen_CheckoutService_checkout_02, gen_CheckoutService_checkout_03, gen_CheckoutService_checkout_04, gen_CheckoutService_checkout_05, gen_CheckoutService_checkout_06, gen_CheckoutService_checkout_09, gen_CheckoutService_checkout_11, gen_CheckoutService_quote_01, gen_CheckoutService_quote_02, gen_CheckoutService_quote_03, gen_CheckoutService_quote_04, gen_CheckoutService_quote_06, gen_CheckoutService_quote_07, gen_CheckoutService_quote_09, gen_CheckoutService_quote_10, gen_CheckoutService_quote_11, gen_InventoryService_available_01, gen_InventoryService_available_02, gen_InventoryService_available_03, gen_InventoryService_available_04, testCheckoutOutOfStock, testRestockAndAvailable) | no |
+| CheckoutService.checkout | places order with price + 1 | DETECTED (testCheckout) | DETECTED (testCheckout) | no |
+| CheckoutService.quote | result + 1 | UNDETECTED | UNDETECTED | no |
+
+Both arms of a fault run on the same mutant commit (identical mutated file). Mutant commit ids and the SHA-256 of the mutated file are recorded in the JSON. "DETECTED" lists the failing tests; a mutant that does not compile is INVALID (stillborn) and is excluded from the mutation score.

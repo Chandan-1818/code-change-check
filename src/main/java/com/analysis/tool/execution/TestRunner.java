@@ -90,13 +90,16 @@ public class TestRunner {
             found = true;
         }
 
+        boolean compilationFailed = output.contains("COMPILATION ERROR");
+
         if (!found) {
-            return new TestRunResult(0, 0, 0, 0, executionTimeMillis, buildSucceeded);
+            return new TestRunResult(0, 0, 0, 0, executionTimeMillis, buildSucceeded, compilationFailed);
         }
 
         int totalFailedOrError = failed + errors;
         int passed = totalTests - totalFailedOrError - skipped;
 
-        return new TestRunResult(totalTests, passed, totalFailedOrError, skipped, executionTimeMillis, buildSucceeded);
+        return new TestRunResult(totalTests, passed, totalFailedOrError, skipped, executionTimeMillis,
+                buildSucceeded, compilationFailed);
     }
 }

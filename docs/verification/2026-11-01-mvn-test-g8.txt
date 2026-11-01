@@ -1,0 +1,51 @@
+﻿Command : mvn -B clean test
+Date    : 2026-11-01
+Commit  : 979146c
+JDK     : openjdk version "23.0.2" 2025-01-21
+mvn exit code: 0
+--- output tail follows ---
+[INFO] Running com.analysis.tool.metrics.StaticCoverageTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.analysis.tool.metrics.StaticCoverageTest
+[INFO] Running com.analysis.tool.parser.JavaParserAnalyzerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.analysis.tool.parser.JavaParserAnalyzerTest
+[INFO] Running com.analysis.tool.testgen.CasePlannerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.analysis.tool.testgen.CasePlannerTest
+[INFO] Running com.analysis.tool.testgen.GeneratedTestWriterReplaceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.analysis.tool.testgen.GeneratedTestWriterReplaceTest
+[INFO] Running com.analysis.tool.testgen.GeneratedTestWriterTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.analysis.tool.testgen.GeneratedTestWriterTest
+[INFO] Running com.analysis.tool.testgen.IncrementalGeneratorTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.analysis.tool.testgen.IncrementalGeneratorTest
+[INFO] Running com.analysis.tool.testgen.IncrementalPlannerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.analysis.tool.testgen.IncrementalPlannerTest
+[INFO] Running com.analysis.tool.testgen.InputGeneratorTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.analysis.tool.testgen.InputGeneratorTest
+[INFO] Running com.analysis.tool.testgen.ManifestReaderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.analysis.tool.testgen.ManifestReaderTest
+[INFO] Running com.analysis.tool.testgen.MethodHasherTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.analysis.tool.testgen.MethodHasherTest
+[INFO] Running com.analysis.tool.testgen.OracleCaptureTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.895 s -- in com.analysis.tool.testgen.OracleCaptureTest
+[INFO] Running com.analysis.tool.testgen.OracleRuntimeTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.252 s -- in com.analysis.tool.testgen.OracleRuntimeTest
+[INFO] Running com.analysis.tool.testgen.ReceiverBuilderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 s -- in com.analysis.tool.testgen.ReceiverBuilderTest
+[INFO] Running com.analysis.tool.testgen.TargetDiscovererTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s -- in com.analysis.tool.testgen.TargetDiscovererTest
+[INFO] Running com.analysis.tool.testgen.TestEmitterTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.analysis.tool.testgen.TestEmitterTest
+[INFO] Running com.analysis.tool.testgen.TestGeneratorTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.165 s -- in com.analysis.tool.testgen.TestGeneratorTest
+[INFO] Running com.analysis.tool.testsupport.SamplePathsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.analysis.tool.testsupport.SamplePathsTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 191, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  04:12 min
+[INFO] Finished at: 2026-11-01T22:07:55+05:30
+[INFO] ------------------------------------------------------------------------
