@@ -1,61 +1,67 @@
 package com.analysis.tool.impact;
 
-import com.analysis.tool.parser.*;
+import com.analysis.tool.parser.MethodInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Compares two lists of MethodInfo (representing the same file at two
- * different revisions) and classifies each method as added, removed,
- * modified, or unchanged.
+ * Compares two versions of a file's methods and classifies each method NAME
+ * as added, removed, modified or unchanged.
  *
- * Matching strategy (current scope): methods are matched by name only.
+ * The rest of the pipeline identifies methods by name, so overloads are
+ * grouped under one name. All overloads of a name (declaration + body) are
+ * compared together: if ANY overload changes, the name is "modified". This
+ * can over-select but can never hide a change, which the earlier
+ * last-one-wins map could.
  *
- * Limitation: if a file has multiple overloaded methods with the same
- * name but different parameters, this detector cannot currently
- * distinguish between them - they will be treated as one logical
- * method for comparison purposes. Overload-aware matching (using
- * parameter types as part of the identity) is a documented limitation
- * to address in a later phase if needed.
+ * Declarations are compared as well as bodies, so a signature-only change
+ * (return type, modifiers, throws, annotations) counts as a change.
  */
 public class MethodChangeDetector {
 
     public MethodChangeResult detectChanges(List<MethodInfo> oldMethods, List<MethodInfo> newMethods) {
-        Map<String, String> oldByName = toBodyMap(oldMethods);
-        Map<String, String> newByName = toBodyMap(newMethods);
+        Map<String, String> oldByName = toFingerprintMap(oldMethods);
+        Map<String, String> newByName = toFingerprintMap(newMethods);
 
         List<String> added = new ArrayList<>();
         List<String> removed = new ArrayList<>();
         List<String> modified = new ArrayList<>();
         List<String> unchanged = new ArrayList<>();
 
-        for (String name : newByName.keySet()) {
+        for (Map.Entry<String, String> entry : newByName.entrySet()) {
+            String name = entry.getKey();
             if (!oldByName.containsKey(name)) {
                 added.add(name);
+            } else if (oldByName.get(name).equals(entry.getValue())) {
+                unchanged.add(name);
             } else {
-                String oldBody = oldByName.get(name);
-                String newBody = newByName.get(name);
-                if (oldBody.equals(newBody)) {
-                    unchanged.add(name);
-                } else {
-                    modified.add(name);
-                }
+                modified.add(name);
             }
         }
-
         for (String name : oldByName.keySet()) {
             if (!newByName.containsKey(name)) {
                 removed.add(name);
             }
         }
-
         return new MethodChangeResult(added, removed, modified, unchanged);
     }
 
-    private Map<String, String> toBodyMap(List<MethodInfo> methods) {
-        Map<String, String> map = new HashMap<>();
+    private Map<String, String> toFingerprintMap(List<MethodInfo> methods) {
+        Map<String, List<String>> grouped = new HashMap<>();
         for (MethodInfo method : methods) {
-            map.put(method.getName(), method.getBodyText());
+            grouped.computeIfAbsent(method.getName(), k -> new ArrayList<>())
+                    .add(method.getDeclaration() + "\n" + method.getBodyText());
         }
-        return map;
+        Map<String, String> fingerprints = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
+            List<String> parts = entry.getValue();
+            Collections.sort(parts); // order of overloads in the file must not matter
+            fingerprints.put(entry.getKey(), String.join("\n----\n", parts));
+        }
+        return fingerprints;
     }
 }

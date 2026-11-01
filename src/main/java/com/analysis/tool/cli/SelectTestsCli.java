@@ -7,13 +7,20 @@ import com.analysis.tool.metrics.EvaluationMetrics;
 
 import java.io.PrintStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Command-line entry point for change-sensitive regression test selection.
  *
  * Usage:
- *   SelectTestsCli <repoPath> <oldRev> <newRev> [<sourceFile=testFile> ...] [--execute]
+ *   SelectTestsCli <repoPath> <oldRev> <newRev> [<sourceFile=testFile> ...]
+ *       [--generated=<revisionDir>] [--execute]
  *
  * Each sourceFile=testFile argument pairs a production file with its test
  * file, both relative to the repository root. The tool compares the two
@@ -21,6 +28,12 @@ import java.util.*;
  * tests that reach a changed method through a chain of calls. Changed
  * methods that no test reaches are listed separately as a warning, so an
  * empty selection is not mistaken for "nothing to run".
+ *
+ * --generated=<revisionDir> names a directory written by the test generator
+ * (it must contain src/test/java/rts/generated/*.java). Those generated tests
+ * take part in the analysis: a changed method reached only by a generated test
+ * is selected and not reported as untested. A missing directory or one without
+ * generated tests is an invalid argument (exit 1), never silently ignored.
  *
  * If the optional trailing --execute flag is given, the tool additionally
  * runs the full test suite and the selected tests as real Maven
@@ -37,17 +50,31 @@ import java.util.*;
  */
 public class SelectTestsCli {
 
+    private static final String GENERATED_PREFIX = "--generated=";
+
     public static void main(String[] args) {
         int exitCode = run(args, System.out, System.err);
         System.exit(exitCode);
     }
 
     public static int run(String[] args, PrintStream out, PrintStream err) {
-        boolean execute = args.length > 0 && "--execute".equals(args[args.length - 1]);
-        String[] positionalArgs = execute ? Arrays.copyOf(args, args.length - 1) : args;
+        String generatedDir = null;
+        List<String> remaining = new ArrayList<>();
+        for (String arg : args) {
+            if (arg.startsWith(GENERATED_PREFIX)) {
+                generatedDir = arg.substring(GENERATED_PREFIX.length());
+            } else {
+                remaining.add(arg);
+            }
+        }
+        String[] filteredArgs = remaining.toArray(new String[0]);
 
-        if (positionalArgs.length < 3) {
-            err.println("Usage: SelectTestsCli <repoPath> <oldRev> <newRev> [<sourceFile=testFile> ...] [--execute]");
+        boolean execute = filteredArgs.length > 0 && "--execute".equals(filteredArgs[filteredArgs.length - 1]);
+        String[] positionalArgs = execute ? Arrays.copyOf(filteredArgs, filteredArgs.length - 1) : filteredArgs;
+
+        if (positionalArgs.length < 3 || (generatedDir != null && generatedDir.isEmpty())) {
+            err.println("Usage: SelectTestsCli <repoPath> <oldRev> <newRev> [<sourceFile=testFile> ...] "
+                    + "[--generated=<revisionDir>] [--execute]");
             return 1;
         }
 
@@ -67,6 +94,29 @@ public class SelectTestsCli {
                     positionalArgs[i].substring(separator + 1)));
         }
 
+        List<String> generatedSources = new ArrayList<>();
+        if (generatedDir != null) {
+            Path generatedTests = Paths.get(generatedDir).resolve("src/test/java/rts/generated");
+            if (!Files.isDirectory(generatedTests)) {
+                err.println("Invalid --generated (no src/test/java/rts/generated under it): " + generatedDir);
+                return 1;
+            }
+            try (Stream<Path> files = Files.list(generatedTests)) {
+                List<Path> javaFiles = files.filter(p -> p.getFileName().toString().endsWith(".java"))
+                        .sorted().collect(Collectors.toList());
+                for (Path file : javaFiles) {
+                    generatedSources.add(Files.readString(file, StandardCharsets.UTF_8));
+                }
+            } catch (IOException e) {
+                err.println("Could not read generated tests: " + e.getMessage());
+                return 2;
+            }
+            if (generatedSources.isEmpty()) {
+                err.println("Invalid --generated (no .java files in " + generatedTests + ")");
+                return 1;
+            }
+        }
+
         try {
             boolean autoDiscovered = mappings.isEmpty();
             if (autoDiscovered) {
@@ -74,7 +124,7 @@ public class SelectTestsCli {
             }
 
             TestSelectionReport report = new ChangeImpactAnalyzer()
-                    .analyzeTransitively(repoPath, oldRevision, newRevision, mappings);
+                    .analyzeTransitively(repoPath, oldRevision, newRevision, mappings, generatedSources);
 
             Set<String> selectedTests = new TreeSet<>(report.getSelectedTests());
             Set<String> selectedTestIdentifiers = new TreeSet<>(report.getSelectedTestIdentifiers());
@@ -84,6 +134,9 @@ public class SelectTestsCli {
             out.println("Repository     : " + repoPath);
             out.println("Compared       : " + oldRevision + " -> " + newRevision);
             out.println("File pairs     : " + mappings.size() + (autoDiscovered ? " (auto-discovered)" : ""));
+            if (generatedDir != null) {
+                out.println("Generated tests: " + generatedSources.size() + " file(s) from " + generatedDir);
+            }
 
             if (!selectedTests.isEmpty()) {
                 out.println("Selected tests (" + selectedTests.size() + "):");
