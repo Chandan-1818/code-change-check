@@ -456,7 +456,7 @@ public class FaultDetectionExperiment {
 
             String environment = environment(workDir);
 
-            git.checkout().setName(baseRevision).setForce(true).call();
+            git.checkout().setName(baseRevision).setForced(true).call();
             deleteRecursively(workDir.resolve("target"));
             deleteRecursively(workDir.resolve(GENERATED_SUBDIR));
 
@@ -479,19 +479,18 @@ public class FaultDetectionExperiment {
             List<FaultOutcome> outcomes = new ArrayList<>();
 
             for (Fault fault : faults) {
-                git.checkout().setName(baseRevision).setForce(true).call();
+                git.checkout().setName(baseRevision).setForced(true).call();
                 deleteRecursively(workDir.resolve("target"));
                 deleteRecursively(workDir.resolve(GENERATED_SUBDIR));
 
-                Path file = workDir.resolve(fault.getFile());
-                String original = Files.readString(file, StandardCharsets.UTF_8);
-                int first = original.indexOf(fault.getFind());
-                if (first < 0 || original.indexOf(fault.getFind(), first + 1) >= 0) {
-                    String detail = "mutation text is not present exactly once in " + fault.getFile();
+                String problem = FaultInjectionRunner.injectionProblem(workDir, fault);
+                if (problem != null) {
                     outcomes.add(new FaultOutcome(fault, null, null,
-                            ArmResult.invalid(detail), ArmResult.invalid(detail)));
+                            ArmResult.invalid(problem), ArmResult.invalid(problem)));
                     continue;
                 }
+                Path file = workDir.resolve(fault.getFile());
+                String original = Files.readString(file, StandardCharsets.UTF_8);
                 String mutated = original.replace(fault.getFind(), fault.getReplace());
                 Files.writeString(file, mutated, StandardCharsets.UTF_8);
 

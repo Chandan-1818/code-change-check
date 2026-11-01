@@ -63,7 +63,7 @@ public class GeneratedSuiteRunner {
                 .setURI(new File(repoPath).getAbsoluteFile().toURI().toString())
                 .setDirectory(workDir.toFile())
                 .call()) {
-            git.checkout().setName(revision).setForce(true).call();
+            git.checkout().setName(revision).setForced(true).call();
 
             Path pom = workDir.resolve("pom.xml");
             if (!Files.exists(pom)

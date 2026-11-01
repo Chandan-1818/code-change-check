@@ -1,9 +1,10 @@
 # Implementation status (evidence-based)
 
-Date: 2026-11-01. Commit tested: 979146c (branch safety-fixes-v3).
-Evidence: docs/verification/2026-11-01-mvn-test-g8.txt
-(mvn -B clean test, all tests: 191 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS, JDK 23.0.2,
-compiled to target 17). Earlier runs: docs/verification/2026-10-30-mvn-test-full.txt (commit 77fe866,
+Date: 2026-11-01. Commit tested: 1e40736 plus the audit fixes listed below (branch safety-fixes-v3).
+Evidence: docs/verification/2026-11-01-audit-fix-mvn-test.txt
+(mvn -B clean test, all tests: 194 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS, JDK 23.0.2,
+compiled to target 17). Earlier runs: docs/verification/2026-11-01-mvn-test-g8.txt (commit 979146c,
+191 run), docs/verification/2026-10-30-mvn-test-full.txt (commit 77fe866,
 164 run), docs/verification/2026-10-26-mvn-test-*.txt (commit b0aa554).
 
 Status words follow CLAUDE.md section 5. A component is VERIFIED only where the recorded run
@@ -73,6 +74,19 @@ being gen_TaxCalculator_calculateTax_02, _04, _05 (the intended behaviour-change
 Caveats: the sample already had tests, so the no-existing-tests case is covered only up to
 compilation (TestGeneratorTest). Pinned oracles do not detect a change in a callee. Dependabot
 reports 1 moderate alert; package not yet identified. JDK 17 re-run outstanding.
+
+## Audit fixes (2026-11-01)
+
+| Issue | Root cause | Fix | Regression test |
+|---|---|---|---|
+| FaultInjectionRunner aborted the whole run when a fault could not be injected at the pinned revision (file missing, or find-text not present exactly once). Reachable in practice: `sampleProjectFaults()` still lists `Calculator.compute`, which is absent from V16. | the fault file was read with `Files.readString` without an existence check, and a non-unique find-text threw `IllegalStateException` | one shared guard `FaultInjectionRunner.injectionProblem(Path, Fault)` used by both harnesses; the fault is recorded as the new `Outcome.SKIPPED` with its reason and excluded from every precision/recall denominator; G8 records it as an unsupported mutation (mutantCommit null) | FaultInjectionRunnerTest.shouldLocateOnlyASingleOccurrence, shouldExplainWhyAFaultCannotBeInjected, shouldRecordAnUninjectableFaultAsSkipped |
+| Deprecated JGit `CheckoutCommand.setForce(boolean)` at 4 call sites | JGit 6.10 renamed it to `setForced(boolean)` | renamed at all 4 call sites (`GeneratedSuiteRunner`, `FaultInjectionRunner`, `FaultDetectionExperiment` x2); `mvn -B clean compile -Dmaven.compiler.showDeprecation=true` is now warning-free | compile check only - the rename is semantically identical |
+
+Checked and found correct, no change made: `GitAnalyzer` closes every `RevWalk`/`TreeWalk`/`CanonicalTreeParser`
+via try-with-resources; every `Files.walk`/`Files.list` in `src/main` is inside try-with-resources;
+`OracleRuntime` reads its timeout through the primitive-`long` `Long.getLong` overload, so it cannot
+null-unbox; no network or AI-service call exists in `src/main` (the only three dependencies are JUnit 5,
+JGit and JavaParser).
 
 ## Slow tests (launch Maven; add to CLAUDE.md section 4)
 TestRunnerIntegrationTest, EvaluationMetricsIntegrationTest, SelectTestsCliExecuteTest,
