@@ -1,10 +1,18 @@
 package com.analysis.tool.experiment;
 
-import com.analysis.tool.git.GitAnalyzer;
-import com.analysis.tool.impact.*;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import com.analysis.tool.git.GitAnalyzer;
+import com.analysis.tool.impact.ChangeImpactAnalyzer;
+import com.analysis.tool.impact.FileMapping;
+import com.analysis.tool.impact.FileMappingDiscoverer;
+import com.analysis.tool.impact.ImpactAnalyzer;
+import com.analysis.tool.impact.TestSelectionReport;
 
 /**
  * Runs the test-selection analysis over an ordered list of revisions and
@@ -48,8 +56,11 @@ public class ExperimentRunner {
             String newRevision = revisions.get(i + 1);
 
             List<FileMapping> mappings = discoverMappings(repoPath, oldRevision, newRevision);
+            List<String> changedFiles = changedFiles(repoPath, oldRevision, newRevision);
             TestSelectionReport report = new ChangeImpactAnalyzer()
-                    .analyzeTransitively(repoPath, oldRevision, newRevision, mappings);
+                    .analyzeTransitively(repoPath, oldRevision, newRevision, mappings,
+                            Collections.<String>emptyList(),
+                            ImpactAnalyzer.UNLIMITED_DEPTH, changedFiles);
 
             rows.add(new Row(oldRevision, newRevision, mappings.size(),
                     new TreeSet<>(report.getSelectedTests()),
@@ -100,6 +111,16 @@ public class ExperimentRunner {
             Set<String> allFiles = new TreeSet<>(git.listFilesAtRevision(oldRevision));
             allFiles.addAll(git.listFilesAtRevision(newRevision));
             return new FileMappingDiscoverer().discover(new ArrayList<>(allFiles));
+        } finally {
+            git.close();
+        }
+    }
+
+    static List<String> changedFiles(String repoPath, String oldRevision, String newRevision)
+            throws IOException {
+        GitAnalyzer git = new GitAnalyzer(repoPath);
+        try {
+            return git.getChangedFiles(oldRevision, newRevision);
         } finally {
             git.close();
         }

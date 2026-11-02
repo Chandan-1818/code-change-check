@@ -1,0 +1,185 @@
+{
+  "baseRevision": "7059f4c",
+  "environment": "java.version=23.0.2, java.vm=23.0.2+9, os=Windows 11 10.0; Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)",
+  "baseline": "tests=17, passed=17, failed=0, errors=0, skipped=0, buildSucceeded=true, timedOut=false, compilationFailed=false",
+  "faults": [
+    {
+      "fault": "Calculator.add",
+      "mutation": "a + b -> a - b",
+      "mutantCommit": "65b72a4d691e0002ef0322779a6c29cfa4c6eda3",
+      "mutantFileSha256": "ee051496c4c7dffdbb5cc634003a819c4c1b4055cd8ea86d27610440f289fe87",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testAdd"], "detail": "tests=17, passed=16, failed=1, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_Calculator_add_02", "gen_Calculator_add_03", "gen_Calculator_add_04", "gen_Calculator_add_05", "gen_Calculator_add_07", "gen_Calculator_add_09", "gen_Calculator_add_11", "gen_Calculator_add_12", "testAdd"], "detail": "tests=115, passed=106, failed=9, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "Calculator.subtract",
+      "mutation": "a - b -> a + b",
+      "mutantCommit": "aa385909d7e4363c6dd8a741bb1092e4c4506d82",
+      "mutantFileSha256": "f46e5ad0c36bcb39906059eb7f3e2cf4d282ca2c97a8c473fb6db22f9ee59e29",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testSubtract"], "detail": "tests=17, passed=16, failed=1, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_Calculator_subtract_02", "gen_Calculator_subtract_03", "gen_Calculator_subtract_04", "gen_Calculator_subtract_05", "gen_Calculator_subtract_07", "gen_Calculator_subtract_09", "gen_Calculator_subtract_11", "gen_Calculator_subtract_12", "testSubtract"], "detail": "tests=115, passed=106, failed=9, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "Calculator.negate",
+      "mutation": "-a -> a",
+      "mutantCommit": "018181837c7f2405a08c66ea907e83506d9ae75a",
+      "mutantFileSha256": "a0c112ce1e5324cc71770849369f5d4aa11589fc59c3153ec4d60ae6ab5c3788",
+      "manualOnly": { "verdict": "UNDETECTED", "failingTests": [], "detail": "tests=17, passed=17, failed=0, errors=0, skipped=0, buildSucceeded=true, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_Calculator_negate_02", "gen_Calculator_negate_03", "gen_Calculator_negate_04", "gen_Calculator_negate_05"], "detail": "tests=115, passed=111, failed=4, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": true,
+      "regression": false
+    },
+    {
+      "fault": "Multiplier.multiply",
+      "mutation": "a * b -> a + b",
+      "mutantCommit": "c3cbff16ba2ebf93942ee025f4047a48982afebb",
+      "mutantFileSha256": "d0a2f4013156103147715d8a1c969ff154230a4e3e34be55c5697a36147321c8",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCalculateTax", "testCheckout", "testFinalPrice", "testMultiply"], "detail": "tests=17, passed=13, failed=4, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_Multiplier_multiply_02", "gen_Multiplier_multiply_03", "gen_Multiplier_multiply_04", "gen_Multiplier_multiply_05", "gen_Multiplier_multiply_06", "gen_Multiplier_multiply_07", "gen_Multiplier_multiply_08", "gen_Multiplier_multiply_09", "gen_Multiplier_multiply_10", "gen_Multiplier_multiply_11", "gen_Multiplier_multiply_12", "gen_PricingService_finalPrice_05", "gen_TaxCalculator_calculateTax_05", "testCalculateTax", "testCheckout", "testFinalPrice", "testMultiply"], "detail": "tests=115, passed=98, failed=17, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "OrderRepository.save",
+      "mutation": "stores total + 1",
+      "mutantCommit": "c3934b3c786b2d189b438fe9b5d713f0b6547aff",
+      "mutantFileSha256": "3c2ac69b89e0b1ef6e2c14bbb06135711281089fd9c762fe3a1328f864be378e",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testPlaceOrder", "testSaveAndFindTotal"], "detail": "tests=17, passed=14, failed=3, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testPlaceOrder", "testSaveAndFindTotal"], "detail": "tests=115, passed=112, failed=3, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "OrderRepository.findTotal",
+      "mutation": "returns total + 1",
+      "mutantCommit": "262334679716b67aa2e9fb39c568ee31676ab137",
+      "mutantFileSha256": "7c1bc13d0c2d72ad1c20d5a26a28d16496d35262a6487538e4e8bb9a4e16e50f",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testPlaceOrder", "testSaveAndFindTotal"], "detail": "tests=17, passed=14, failed=3, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testPlaceOrder", "testSaveAndFindTotal"], "detail": "tests=115, passed=112, failed=3, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "OrderService.placeOrder",
+      "mutation": "saves total + 1",
+      "mutantCommit": "3acfed52282af87e1e0caf6409b9545cbda02093",
+      "mutantFileSha256": "4dfeabb6c01115ed5ec7c48993ecb28ef5b7a705281d860ebefa0126cc080e7f",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testPlaceOrder"], "detail": "tests=17, passed=15, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testPlaceOrder"], "detail": "tests=115, passed=113, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "OrderService.getOrderTotal",
+      "mutation": "returns total + 1",
+      "mutantCommit": "cad23128f06f52bcf7c98f4b2f66b885dac809df",
+      "mutantFileSha256": "267b07628cd8fb2b64979a107e39bcdcd8037172af2e7ecd9eb3a956740c0ad7",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testCheckoutOutOfStock", "testPlaceOrder"], "detail": "tests=17, passed=14, failed=3, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_OrderService_getOrderTotal_01", "gen_OrderService_getOrderTotal_02", "gen_OrderService_getOrderTotal_03", "gen_OrderService_getOrderTotal_04", "gen_OrderService_getOrderTotal_05", "testCheckout", "testCheckoutOutOfStock", "testPlaceOrder"], "detail": "tests=115, passed=107, failed=8, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "TaxCalculator.calculateTax",
+      "mutation": "result + 1",
+      "mutantCommit": "95ba29e24b1ef21e3b2c51ebb4f087a706ef1772",
+      "mutantFileSha256": "cea8cdea1bc5c8091113c18239d1f1af4a0dedb2c5ff6cf9de63229b1219597d",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCalculateTax", "testCalculateTaxOnZeroAmount", "testCheckout", "testFinalPrice", "testFinalPriceOnZeroAmount"], "detail": "tests=17, passed=12, failed=5, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_PricingService_finalPrice_01", "gen_PricingService_finalPrice_03", "gen_PricingService_finalPrice_05", "gen_TaxCalculator_calculateTax_01", "gen_TaxCalculator_calculateTax_03", "testCalculateTax", "testCalculateTaxOnZeroAmount", "testCheckout", "testFinalPrice", "testFinalPriceOnZeroAmount"], "detail": "tests=115, passed=105, failed=10, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "DiscountPolicy.applyDiscount",
+      "mutation": "result + 1",
+      "mutantCommit": "43f28753c22611541a862227f90159604eb55166",
+      "mutantFileSha256": "fb7fbba4dc4967faf902ea5468c303f5025b127f087f5f30066dcfd1ba9ad021",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testApplyDiscount", "testApplyDiscountOnZeroAmount", "testCheckout", "testFinalPrice", "testFinalPriceOnZeroAmount"], "detail": "tests=17, passed=12, failed=5, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_DiscountPolicy_applyDiscount_01", "gen_DiscountPolicy_applyDiscount_02", "gen_DiscountPolicy_applyDiscount_03", "gen_DiscountPolicy_applyDiscount_04", "gen_DiscountPolicy_applyDiscount_05", "gen_PricingService_finalPrice_01", "gen_PricingService_finalPrice_02", "gen_PricingService_finalPrice_03", "gen_PricingService_finalPrice_04", "gen_PricingService_finalPrice_05", "testApplyDiscount", "testApplyDiscountOnZeroAmount", "testCheckout", "testFinalPrice", "testFinalPriceOnZeroAmount"], "detail": "tests=115, passed=100, failed=15, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "PricingService.finalPrice",
+      "mutation": "tax dropped",
+      "mutantCommit": "b0b10e30fbdf9b1c9c94e80cf39ad09da129c8dd",
+      "mutantFileSha256": "9bce41a27fb3248cd3a76316a8a3a9cb2e3ddc728423993a22971cdd3f46b805",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckout", "testFinalPrice"], "detail": "tests=17, passed=15, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_PricingService_finalPrice_02", "gen_PricingService_finalPrice_04", "gen_PricingService_finalPrice_05", "testCheckout", "testFinalPrice"], "detail": "tests=115, passed=110, failed=5, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "InventoryRepository.setStock",
+      "mutation": "stores quantity + 1",
+      "mutantCommit": "e28d7d6958db2c58c46cb021b059b5352c2415f4",
+      "mutantFileSha256": "3792c5beee6754f32ece3e3eff6e47713499951402b4a31b7586bd0e837604fb",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testRestockAndAvailable", "testSetAndGetStock"], "detail": "tests=17, passed=15, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testRestockAndAvailable", "testSetAndGetStock"], "detail": "tests=115, passed=113, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "InventoryRepository.getStock",
+      "mutation": "returns quantity + 1",
+      "mutantCommit": "5e576b9131e44e1bdbbbf2d4d3667584b1152706",
+      "mutantFileSha256": "e6e0d8ae34033cc0a55e5597905ecdb1ae5796165031679e7c656268c7966808",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testRestockAndAvailable", "testSetAndGetStock"], "detail": "tests=17, passed=15, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testRestockAndAvailable", "testSetAndGetStock"], "detail": "tests=115, passed=113, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "InventoryService.restock",
+      "mutation": "restocks quantity + 1",
+      "mutantCommit": "4d032ac3f7bbf93bcbef6e70650f8205010795a1",
+      "mutantFileSha256": "ba48a2638a5e95ddbd67937d08e04739f9f53e20345277ea4ad14a7a2a1bfdaf",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testRestockAndAvailable"], "detail": "tests=17, passed=16, failed=1, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testRestockAndAvailable"], "detail": "tests=115, passed=114, failed=1, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "InventoryService.available",
+      "mutation": "returns stock + 1",
+      "mutantCommit": "43dc3b311a9a9a200d9cdbc563ba8904617e01a1",
+      "mutantFileSha256": "d07b80037d4f4d6a37563bbb5a5927ca312344dc55c78602d29c227c17781669",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckoutOutOfStock", "testRestockAndAvailable"], "detail": "tests=17, passed=15, failed=2, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["gen_CheckoutService_checkout_01", "gen_CheckoutService_checkout_02", "gen_CheckoutService_checkout_03", "gen_CheckoutService_checkout_04", "gen_CheckoutService_checkout_05", "gen_CheckoutService_checkout_06", "gen_CheckoutService_checkout_09", "gen_CheckoutService_checkout_11", "gen_CheckoutService_quote_01", "gen_CheckoutService_quote_02", "gen_CheckoutService_quote_03", "gen_CheckoutService_quote_04", "gen_CheckoutService_quote_06", "gen_CheckoutService_quote_07", "gen_CheckoutService_quote_09", "gen_CheckoutService_quote_10", "gen_CheckoutService_quote_11", "gen_InventoryService_available_01", "gen_InventoryService_available_02", "gen_InventoryService_available_03", "gen_InventoryService_available_04", "testCheckoutOutOfStock", "testRestockAndAvailable"], "detail": "tests=115, passed=92, failed=23, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "CheckoutService.checkout",
+      "mutation": "places order with price + 1",
+      "mutantCommit": "4f169577b89839400556d7203d12a1382b05146f",
+      "mutantFileSha256": "17fb72cf67fbb37e5d67864e1815133e753aa363f91b733845ef18f171ce0414",
+      "manualOnly": { "verdict": "DETECTED", "failingTests": ["testCheckout"], "detail": "tests=17, passed=16, failed=1, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "DETECTED", "failingTests": ["testCheckout"], "detail": "tests=115, passed=114, failed=1, errors=0, skipped=0, buildSucceeded=false, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    },
+    {
+      "fault": "CheckoutService.quote",
+      "mutation": "result + 1",
+      "mutantCommit": "5069adc3f83cb2c0203724f26725bdffa0d97ec8",
+      "mutantFileSha256": "ddb682e5c4c6f2782d26b4e678888a19fe0b8404b4b1541e82dfad4b3f945428",
+      "manualOnly": { "verdict": "UNDETECTED", "failingTests": [], "detail": "tests=17, passed=17, failed=0, errors=0, skipped=0, buildSucceeded=true, timedOut=false, compilationFailed=false" },
+      "manualAndGenerated": { "verdict": "UNDETECTED", "failingTests": [], "detail": "tests=115, passed=115, failed=0, errors=0, skipped=0, buildSucceeded=true, timedOut=false, compilationFailed=false" },
+      "additionalDetection": false,
+      "regression": false
+    }
+  ],
+  "aggregate": {
+    "faults": 17,
+    "manualOnly": { "detected": 15, "undetected": 2, "invalid": 0, "inconclusive": 0, "mutationScore": 0.882353 },
+    "manualAndGenerated": { "detected": 16, "undetected": 1, "invalid": 0, "inconclusive": 0, "mutationScore": 0.941176 },
+    "additionalDetection": ["Calculator.negate"],
+    "regressions": [],
+    "undetectedInBoth": ["CheckoutService.quote"]
+  }
+}

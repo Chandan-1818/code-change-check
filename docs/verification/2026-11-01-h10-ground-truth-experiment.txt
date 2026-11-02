@@ -1,0 +1,53 @@
+H10 verification evidence - executed ground-truth precision/recall experiment
+Project  : CODE-CHANGE-ANALYSIS (com.analysis.tool:CODE-CHANGE-ANALYSIS:1.0-SNAPSHOT)
+Date     : 2026-11-01T19:07 (approx; run began 19:06, finished after the 17 full-suite mutant runs)
+Branch   : safety-fixes-v3 (HEAD 42f0966)
+Command  : java -cp "target/classes;<dependency classpath (target/cp.txt)>" ^
+             com.analysis.tool.experiment.FaultInjectionEvaluator ^
+             "D:/PROJECT/SAMPLE-PROJECT/sample-project" 7059f4c grown experiments
+Ground truth: for each injected fault a mutant commit is created at base V16=7059f4c and the
+           FULL sample suite is run on the mutant; the tests that actually fail are the required
+           (ground-truth) set. Selected = the tool's selection for base -> mutant.
+Result   : 17 cases. Aggregate TP=37, FP=18, FN=0; precision=0.6727, recall=1.0000.
+           (Recall is exact; precision is a documented lower bound, D-16.)
+Artifacts: experiments/ground-truth-report.md, experiments/ground-truth-results.json
+Note     : the leading SLF4J lines are JGit's NOP-logger notice on stderr, not an error.
+--------------------------------------------------------------------------------
+
+java : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3597
++ ... t@trae.ai'; java -cp ("target/classes;" + (Get-Content -Raw target/cp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+# Ground-truth evaluation report
+
+Cases: 17
+
+| Case | Baseline | Changed | Selected | Required | TP | FP | FN | Precision | Recall |
+|---|---|---|---|---|---|---|---|---|---|
+| fault:Calculator.add | 7059f4c | bfdcb6445ebb5ba036aaaf62a254b94b9727d54c | testAdd | testAdd | 1 | 0 | 0 | 1.0000 | 1.0000 |
+| fault:Calculator.subtract | 7059f4c | 48c54e788dc75934bda29d104c11050ca312a728 | testSubtract | testSubtract | 1 | 0 | 0 | 1.0000 | 1.0000 |
+| fault:Calculator.negate | 7059f4c | 65d2197e29c3ef6333c06a10952f10628e9631ac | - | - | 0 | 0 | 0 | n/a | n/a |
+| fault:Multiplier.multiply | 7059f4c | ee9b9fe32a3f339fecf01ff81f01a3d5cbae9c3b | testCalculateTax, testCalculateTaxHasMinimumOfOne, testCalculateTaxOnZeroAmount, testCheckout, testCheckoutOutOfStock, testFinalPrice, testFinalPriceOnZeroAmount, testMultiply | testCalculateTax, testCheckout, testFinalPrice, testMultiply | 4 | 4 | 0 | 0.5000 | 1.0000 |
+| fault:OrderRepository.save | 7059f4c | 8f212cb4eb5fa5e5bdc8107a205c44e4b89d5906 | testCheckout, testCheckoutOutOfStock, testPlaceOrder, testSaveAndFindTotal | testCheckout, testPlaceOrder, testSaveAndFindTotal | 3 | 1 | 0 | 0.7500 | 1.0000 |
+| fault:OrderRepository.findTotal | 7059f4c | fa2519c1ec253deaf456dcacdd42a601aa63c095 | testCheckout, testCheckoutOutOfStock, testPlaceOrder, testSaveAndFindTotal | testCheckout, testPlaceOrder, testSaveAndFindTotal | 3 | 1 | 0 | 0.7500 | 1.0000 |
+| fault:OrderService.placeOrder | 7059f4c | 47fce160cfa85a9071d6a8ea03cfc8c16cfe47c2 | testCheckout, testCheckoutOutOfStock, testPlaceOrder | testCheckout, testPlaceOrder | 2 | 1 | 0 | 0.6667 | 1.0000 |
+| fault:OrderService.getOrderTotal | 7059f4c | 83dc3f1253d4397d3fa9ce8753cb4f94d421a971 | testCheckout, testCheckoutOutOfStock, testPlaceOrder | testCheckout, testCheckoutOutOfStock, testPlaceOrder | 3 | 0 | 0 | 1.0000 | 1.0000 |
+| fault:TaxCalculator.calculateTax | 7059f4c | 1792eee13b36a947f8f978eb4c0137019c45263b | testCalculateTax, testCalculateTaxHasMinimumOfOne, testCalculateTaxOnZeroAmount, testCheckout, testCheckoutOutOfStock, testFinalPrice, testFinalPriceOnZeroAmount | testCalculateTax, testCalculateTaxOnZeroAmount, testCheckout, testFinalPrice, testFinalPriceOnZeroAmount | 5 | 2 | 0 | 0.7143 | 1.0000 |
+| fault:DiscountPolicy.applyDiscount | 7059f4c | 83ffd388d7989d89ba1ccab099c7dd6e0115f008 | testApplyDiscount, testApplyDiscountOnZeroAmount, testCheckout, testCheckoutOutOfStock, testFinalPrice, testFinalPriceOnZeroAmount | testApplyDiscount, testApplyDiscountOnZeroAmount, testCheckout, testFinalPrice, testFinalPriceOnZeroAmount | 5 | 1 | 0 | 0.8333 | 1.0000 |
+| fault:PricingService.finalPrice | 7059f4c | 900200aca2b6b7014625f486f8d7b318acf07093 | testCheckout, testCheckoutOutOfStock, testFinalPrice, testFinalPriceOnZeroAmount | testCheckout, testFinalPrice | 2 | 2 | 0 | 0.5000 | 1.0000 |
+| fault:InventoryRepository.setStock | 7059f4c | dac233603e9ecb0710d8ca726a294e9b067ec969 | testCheckout, testRestockAndAvailable, testSetAndGetStock | testRestockAndAvailable, testSetAndGetStock | 2 | 1 | 0 | 0.6667 | 1.0000 |
+| fault:InventoryRepository.getStock | 7059f4c | c4590a621895c1984f3c7f3c8056074178191326 | testCheckout, testCheckoutOutOfStock, testRestockAndAvailable, testSetAndGetStock | testRestockAndAvailable, testSetAndGetStock | 2 | 2 | 0 | 0.5000 | 1.0000 |
+| fault:InventoryService.restock | 7059f4c | 528c4b70eb27ea58031f5902fdd6ad77f10ae3ad | testCheckout, testRestockAndAvailable | testRestockAndAvailable | 1 | 1 | 0 | 0.5000 | 1.0000 |
+| fault:InventoryService.available | 7059f4c | 9ef654b0890b9a23b654b85f9e4e710794d2404b | testCheckout, testCheckoutOutOfStock, testRestockAndAvailable | testCheckoutOutOfStock, testRestockAndAvailable | 2 | 1 | 0 | 0.6667 | 1.0000 |
+| fault:CheckoutService.checkout | 7059f4c | 56e9a1ebf1594e26f29bd4a1832391060e53f60a | testCheckout, testCheckoutOutOfStock | testCheckout | 1 | 1 | 0 | 0.5000 | 1.0000 |
+| fault:CheckoutService.quote | 7059f4c | cf1572b020a4ec8408e93ea4489448e198a04a95 | - | - | 0 | 0 | 0 | n/a | n/a |
+
+Aggregate: TP=37, FP=18, FN=0; precision=0.6727, recall=1.0000.
+
+Recall is exact with respect to the ground truth; precision is a lower bound (a selected test that still passes may be relevant). "n/a" marks a metric with a zero denominator (nothing selected, or nothing required).
+Wrote ground-truth-report.md and ground-truth-results.json to D:\PROJECT\CODE-CHANGE-ANALYSIS\experiments

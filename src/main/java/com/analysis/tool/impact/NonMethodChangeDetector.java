@@ -1,17 +1,19 @@
 package com.analysis.tool.impact;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.analysis.tool.parser.JavaParserAnalyzer;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.InitializerDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Detects changes that method-level comparison cannot see: fields,
@@ -72,6 +74,46 @@ public class NonMethodChangeDetector {
             header.getMembers().clear();
             prints.add("E|" + header.toString().trim());
         }
+        for (RecordDeclaration type : cu.findAll(RecordDeclaration.class)) {
+            RecordDeclaration header = type.clone();
+            header.getMembers().clear();
+            prints.add("R|" + header.toString().trim());
+        }
+        for (AnnotationDeclaration type : cu.findAll(AnnotationDeclaration.class)) {
+            // The whole declaration is fingerprinted: an annotation type's
+            // elements (e.g. "int value()") are not MethodDeclarations, so
+            // MethodChangeDetector never sees them.
+            prints.add("A|" + type.toString().trim());
+        }
         return prints;
+    }
+
+    /**
+     * True when the two versions differ structurally (after comments are
+     * removed and whitespace is normalised by the parser's pretty printer),
+     * even if the difference is only an addition.
+     *
+     * Unlike {@link #hasNonMethodChange}, which deliberately ignores pure
+     * additions, this method answers the raw question "did this file change in
+     * a way the member-level analysis has not explained?". It is used to turn a
+     * changed Java file that no detector flagged into an uncertainty trigger
+     * rather than silently ignoring it.
+     *
+     * A blank side (added or deleted file) returns false: every member is then
+     * already classified as added or removed by the caller.
+     */
+    public boolean differsStructurally(String oldSource, String newSource) {
+        if (isBlank(oldSource) || isBlank(newSource)) {
+            return false;
+        }
+        return !normalised(oldSource).equals(normalised(newSource));
+    }
+
+    private static String normalised(String source) {
+        return JavaParserAnalyzer.parseWithoutComments(source).toString();
+    }
+
+    private static boolean isBlank(String source) {
+        return source == null || source.trim().isEmpty();
     }
 }

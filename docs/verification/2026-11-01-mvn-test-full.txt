@@ -1,0 +1,23 @@
+COMMAND: mvn -B test (full suite, all test classes, no filter)
+COMMIT : 42f0966
+DATE   : 2026-11-01
+DIRTY  : untracked docs/handover/, docs/verification/2026-11-01-mvn-test-full-raw.txt
+JDK    : openjdk 23.0.2 (BellSoft Liberica), Maven 3.9.16, compiler target 17
+SAMPLE : D:/PROJECT/SAMPLE-PROJECT/sample-project present; all 16 pinned hashes
+         (f2493c2 9ed64fa 7584402 a3d0163 268a165 cc0d769 bae01d1 ebec3c0
+          7b79d9c 52db174 2a36954 bee1bf5 d85a3b7 efc30d0 3337a0b 7059f4c)
+         resolve as commits (V1..V16).
+--- output tail ---
+[INFO] Running com.analysis.tool.metrics.StaticCoverageTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.analysis.tool.metrics.StaticCoverageTest
+[INFO] Running com.analysis.tool.testgen.TestGeneratorTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.725 s -- in com.analysis.tool.testgen.TestGeneratorTest
+[INFO] Running com.analysis.tool.testsupport.SamplePathsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.analysis.tool.testsupport.SamplePathsTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 174, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  ~6 min
+Raw output: docs/verification/2026-11-01-mvn-test-full-raw.txt
