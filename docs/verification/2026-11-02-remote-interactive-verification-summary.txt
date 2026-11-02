@@ -95,6 +95,23 @@ mvn -B package     : Tests run 403, Failures 0, Errors 0, Skipped 0, BUILD SUCCE
 Logs    : 2026-11-02-remote-interactive-mvn-test-full.txt,
           2026-11-02-remote-interactive-mvn-package.txt
 
+K. REMOTE EXECUTION PATH (isolated execution through --url=)
+============================================================
+Command : java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+          --url=file:///D:/PROJECT/SAMPLE-PROJECT/sample-project
+          --base=a3d0163 --target=268a165 --execute --yes
+Result  : exit 0. The clone is executed in an isolated checkout of 268a165:
+          security warning shown, "Execution confirmed by --yes.",
+          Full suite 5 tests / 5 passed / build succeeded / compile ok,
+          Selected run 2 tests / 2 passed / build succeeded / compile ok,
+          Full PHASE-11 report with EXECUTION STATUS SUCCESS,
+          FINAL RESULT "... were executed in an isolated checkout and all of
+          them passed; 0 generated test(s) were confirmed by Surefire."
+          This proves the FINAL INSTRUCTIONS path
+          (URL -> Clone -> ... -> Isolated execution -> Verify Surefire ->
+          Final report) works end to end over the remote URL entry point.
+Log     : 2026-11-02-remote-interactive-live-url-execute.txt
+
 FOCUSED SUITE
 ============================================================
 mvn -B -o test -Dtest=InteractiveCliTest,RemoteWorkflowCliTest,RemoteRepositoryTest,ChangedFileClassifierCategoryTest
