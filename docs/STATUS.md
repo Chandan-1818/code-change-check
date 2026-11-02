@@ -1,26 +1,203 @@
 # Implementation status (evidence-based)
 
+Latest (2026-11-02, branch feature/complete-live-demo): T1 (runnable live demo entry point,
+packaging, and documentation). Full suite 356 run, 0 failures, 0 errors, 0 skipped,
+BUILD SUCCESS. Executable shaded JAR built via maven-shade-plugin (target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar)
+with main entry point DemoCli and exec-maven-plugin configured. Verified on sample repository
+V4 (a3d0163) -> V5 (268a165): static demo selected 2 tests (testCompute transitive, testMultiply direct,
+confidence HIGH); --execute verified in isolated checkout (5/5 full passed, 2/2 selected passed,
+60.0% test reduction, 0 failures, 0 timeouts). Root README.md created and DemoCliTest added (8 tests).
+Evidence: full suite 356 tests passed, mvn package successful, DemoCli live execution verified.
+
+Previous (2026-11-01, branch safety-fixes-v3, HEAD 42f0966): G8 fault-detection gain measured;
+Phase 8B G8 is PARTIAL (fault-detection gain DONE; coverage before/after and supported-vs-skipped
+still NOT STARTED). Full suite 348 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS.
+Evidence: docs/verification/2026-11-01-mvn-test-g8.txt (348 tests),
+docs/verification/2026-11-01-g8-focused-tests.txt (14 focused tests) and
+docs/verification/2026-11-01-g8-experiment.txt (17-fault two-arm experiment: manual-only mutation
+score 15/17=0.8824, manual+generated 16/17=0.9412, additional detection = 1 (`Calculator.negate`),
+regressions = 0, undetected in both = 1 (`CheckoutService.quote`)). Results:
+experiments/fault-detection-report.md, experiments/fault-detection-results.json.
+
+Previous (2026-11-01, branch safety-fixes-v3, HEAD 42f0966): H10 ground-truth precision/recall
+evaluation added; GAP-17 closed. Full suite 334 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS.
+Evidence: docs/verification/2026-11-01-mvn-test-h10.txt (334 tests) and
+docs/verification/2026-11-01-h10-focused-tests.txt (40 focused tests) and
+docs/verification/2026-11-01-h10-ground-truth-experiment.txt (17-case experiment, TP=37, FP=18,
+FN=0, precision=0.6727, recall=1.0000). Results: experiments/ground-truth-report.md,
+experiments/ground-truth-results.json.
+
+Earlier (2026-11-01, branch safety-fixes-v3, HEAD 42f0966): H9 preflight validation added; full
+suite 294 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS. Evidence:
+docs/verification/2026-11-01-mvn-test-h9.txt (294 tests) and
+docs/verification/2026-11-01-h9-focused-tests.txt (25 focused tests).
+
 Date: 2026-10-30. Commit tested: 77fe866 (branch safety-fixes-v3).
 Evidence: docs/verification/2026-10-30-mvn-test-full.txt
 (mvn -B test, all tests: 164 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS, JDK 23.0.2,
 compiled to target 17). Earlier runs: docs/verification/2026-10-26-mvn-test-*.txt (commit b0aa554).
 
-Status words follow CLAUDE.md section 5. A component is VERIFIED only where the recorded run
+H5 (selection confidence, typed parse errors, Java 17 language level) added 2026-11-01 on the
+working tree (not yet committed). Evidence: docs/verification/2026-11-01-mvn-test-h5.txt
+(180 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS).
+
+H6 (configurable impact depth with truncation reporting) added 2026-11-01 on the working tree
+(not yet committed). Evidence: docs/verification/2026-11-01-mvn-test-h6.txt
+(192 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS). D-04 confirmed: unlimited depth is the
+default; a configured finite limit reports truncation; 0 and negatives other than -1 are rejected.
+Focused review accepted 2026-11-01: `hasUnexploredCaller` verified correct for branching, cycles,
+already-visited nodes and finite limits; CLI/report truncation observable; public constructors and
+overloads backward compatible; no defect found. GAP-07 closed; D-04 confirmed.
+
+Status words follow the vocabulary in the handover documentation (CLAUDE.md is not present in this
+repository and must not be assumed). A component is VERIFIED only where the recorded run
 executes it and passes. Passing tests do not close a gap in the gap register.
+
+H3 (Stage A identity: member ids, arity-aware selection, constructor participation) added
+2026-11-01 on the working tree (not yet committed). Evidence:
+docs/verification/2026-11-01-mvn-test-h3.txt (207 run, 0 failures, 0 errors, 0 skipped,
+BUILD SUCCESS). Scope: `MemberId(className, memberName, arity, kind)` alongside the unchanged
+`MethodNode`; `MemberChangeDetector`/`MemberChangeResult` (member-level, arity-aware); constructor
+declarations become graph nodes and `new X(...)`/`this(...)` become edges with a resolved class;
+the changed member's arity narrows only the FIRST reverse-BFS hop. Conservative fallbacks: callers
+whose call-site arity is unknown are still included, varargs members have arity disabled, and a
+non-member change (field/constant/header/import) still expands the whole file. Fix during the run:
+constructor callers are matched by class, not by the shared "<init>" name, so a change to one class's
+one-argument constructor no longer selects tests that construct a different class (`LargerSampleHistoryTest`
+V11->V12 regression). Not resolved by H3: same-arity/different-type overloads still collapse (no type
+resolution), and callee class names remain UNKNOWN (GAP-06 stays OPEN). GAP-20 and GAP-12 were already closed by H5; GAP-07 by H6.
+
+H4 (class-level and non-method change triggers) added 2026-11-01 on the working tree (not yet
+committed). Evidence: docs/verification/2026-11-01-mvn-test-h4.txt (225 run, 0 failures, 0 errors,
+0 skipped, BUILD SUCCESS). Scope: `NonMethodChangeDetector` now also fingerprints record declarations
+(header/components) and annotation types (whole declaration, since their elements are not methods);
+new `ChangedFileClassifier` classifies each changed path (Java source/test, build, resource, other);
+`ChangeImpactAnalyzer` gained a changed-files overload. A changed build file (e.g. pom.xml), resource,
+or any other non-Java file cannot be analysed at member level, so the run returns FALLBACK confidence
+and selects every discovered test (`TestSelectionReport.getBuildOrResourceChanges()`). A changed Java
+file that no detector explained (e.g. an added import) is now an uncertainty trigger that expands the
+whole file (REDUCED) instead of being silently ignored. Wired into `ExperimentRunner` and
+`SelectTestsCli`. Comment-only changes still select nothing.
+
+H2 (configurable sample path with a clear diagnostic) added 2026-11-01 on the working tree (not yet
+committed). Evidence: docs/verification/2026-11-01-mvn-test-h2.txt (229 run, 0 failures, 0 errors,
+0 skipped, BUILD SUCCESS). Scope: the sample-project directory is resolved in one place
+(`testsupport/SamplePaths`) in the order system property `rts.sample` (preferred), environment variable
+`RTS_SAMPLE_PROJECT`, then the original default path, so behaviour is unchanged when nothing is set.
+`SamplePaths.sampleProject()` now validates the directory (Path-based, platform-portable) and fails with
+an actionable message instead of an obscure git/parse error. The two negative CLI tests no longer
+hard-code a Windows `D:/...` path. This is test support only and stays separate from the target-repository
+path a user supplies to the CLIs at run time.
+
+H7 (test discovery) added 2026-11-01 on the working tree (not yet committed). Evidence:
+docs/verification/2026-11-01-mvn-test-h7.txt (249 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS).
+Scope: new `impact/TestSourceProvider` discovers the tests of a test source, recognising every JUnit 5
+test annotation (`@Test`, `@ParameterizedTest`, `@RepeatedTest`, `@TestFactory`, `@TestTemplate`);
+lifecycle methods (`@BeforeEach`, `@BeforeAll`, `@AfterEach`, `@AfterAll`) are attributed to their own
+class's tests and to those of nested classes, so a change reachable only through a lifecycle method still
+selects the class's tests; a `@Nested` test keeps the enclosing-type identifier (`Outer$Inner#method`) and
+is no longer also attributed to the enclosing class. `ChangeImpactAnalyzer` now discovers **every**
+`src/test/java/**.java` file at the new revision (not only the `Foo`->`FooTest` pairs), so a
+non-conventionally named test file is associated with production code through the call graph (GAP-08).
+Added or modified test methods are selected unconditionally; tests that call a method removed between the
+revisions are reported as potentially broken without changing the impact-based selection; and every
+selected test carries an explanation chain via the new `parents` map in `ImpactSet`
+(`ImpactSet.explanationChain`, `TestSelectionReport.getExplanations`). `SelectTestsCli` prints new
+"Selection reasons" and "Potentially broken tests" sections. The Phase 8B split is preserved:
+`TestSourceProvider` discovers manual test sources only; generated/`extraTestSources` are supplied by the
+caller and are never treated as "modified in the repository" (MR-9 remains Phase 8B).
+Still not resolved: enum/record test containers are not inspected (GAP-13 partial); callee class names
+remain UNKNOWN, so an explanation chain's final node is rendered from the changed member's identity
+(GAP-06 stays OPEN).
+
+H8 (execution-pipeline hardening) added 2026-11-01 on the working tree (not yet committed). Evidence:
+docs/verification/2026-11-01-mvn-test-h8.txt (269 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS)
+and docs/verification/2026-11-01-h8-focused-tests.txt (24 focused tests, BUILD SUCCESS).
+Scope: `--execute` now runs Maven in an isolated temporary checkout of the requested new revision
+(`execution/IsolatedRevisionCheckout`, GAP-14), so the user's working tree is never modified and a stale
+working directory can no longer decide the result; the clone is deleted on close, and on failure the
+Maven log and Surefire reports are copied to a preserved directory whose path is printed. `TestRunner`
+is bounded by a configurable timeout (`--timeout=<ms>`, default 300000 ms; GAP-15): a run that exceeds
+it has its whole process tree terminated and is reported as `timedOut`, distinctly from a test failure,
+with the partial output kept in `target/maven-execution.log`. Per-test results come from a new
+`execution/SurefireReportParser` that reads the Surefire XML (GAP-16), so the summary names passed,
+failed (assertion), errored (execution) and skipped tests and distinguishes a failure from an error; a
+missing, malformed or partial report is skipped without crashing, and when no XML exists no per-test
+detail is claimed (the console summary is used instead). A build that fails to compile is reported as
+`compilationFailed` with zero tests, never as a run in which every test failed. `SelectTestsCli` prints
+a summary of target revision, selected count, passed/failed/errored/skipped/timed-out counts,
+compilation status and duration. The pinned `SelectTestsCliExecuteTest` was migrated (not removed) to
+the new summary labels and to V5's real suite, with the GAP-14 justification documented in its Javadoc.
+Still open: the general `mvn`-only assumption of `TestRunner`. GAP-17 is now closed by H10.
+
+H9 (preflight validation) added 2026-11-01 on the working tree (not yet committed). Evidence:
+docs/verification/2026-11-01-mvn-test-h9.txt (294 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS)
+and docs/verification/2026-11-01-h9-focused-tests.txt (25 focused tests, BUILD SUCCESS).
+Scope: new `preflight/Preflight` inspects the target repository on the filesystem **before** any
+analysis, test selection or execution, and returns a structured `preflight/PreflightResult` whose
+status is `SUPPORTED`, `REDUCED` or `UNSUPPORTED`, derived from the reason lists (so a caller cannot
+report SUPPORTED while holding a rejection). It never returns console strings only. Rejections
+(UNSUPPORTED): the repository path is missing/not a directory; no `.git` **directory**; a `.git`
+that is a **file** (a linked worktree or submodule gitdir pointer — this is GAP-19, refused rather
+than silently mis-read); a multi-module Maven project (`<modules>` in `pom.xml`); a JUnit 4 project
+(`junit:junit` or `junit-vintage` dependency, or `org.junit.*` annotations/`Assert` in sources).
+Reductions (REDUCED, analysis still runs): Spring (`org.springframework`), Mockito
+(`org.mockito`), Lombok and reflection (`java.lang.reflect`, `Class.forName`, `getDeclared*`) usage
+that can hide call edges, so selection reliability is lower. `SelectTestsCli` runs preflight before
+its analysis `try` block: an UNSUPPORTED repository is refused with exit code 2 and the message
+`Analysis failed: preflight validation refused this repository.` followed by one actionable line per
+reason; a REDUCED repository prints a `Preflight` block (after the `Confidence` line) explaining
+which detected usage lowers confidence. A missing `pom.xml` is **not** a rejection, so plain/temp
+Git repositories without a build file remain SUPPORTED. Existing public signatures and all H2-H8
+behaviour are unchanged. Open: the plain/temp-repo tests still pass and the general `mvn`-only
+assumption remains. GAP-17 is now closed by H10.
+
+H10 (ground-truth precision/recall evaluation) added 2026-11-01 on the working tree (not yet
+committed). Evidence: docs/verification/2026-11-01-mvn-test-h10.txt (334 tests, BUILD SUCCESS),
+docs/verification/2026-11-01-h10-focused-tests.txt (40 focused tests, BUILD SUCCESS), and
+docs/verification/2026-11-01-h10-ground-truth-experiment.txt (17-case experiment executed).
+Scope: new `eval` package — `GroundTruthCase`, `GroundTruthDataset`, `GroundTruthEvaluator`,
+`PrecisionRecall`, `CaseResult`, `EvaluationReport` — provides a complete, standalone precision/recall
+evaluation framework separate from normal production selection. `PrecisionRecall.of(selected, required)`
+computes TP, FP, FN from set intersection; zero denominators return `null` (rendered `"n/a"`) so
+an empty selection is never silently promoted to 100% precision. `GroundTruthDataset` is a
+pipe-delimited text format with per-line error reporting; `GroundTruthEvaluator` drives the evaluation
+through a `TestSelector` abstraction (fake implementations keep unit tests repository-free).
+`EvaluationReport` produces deterministic Markdown and JSON output. The production adapter
+`AnalysisTestSelector` implements `TestSelector` using the real `ChangeImpactAnalyzer`. The
+reproducible experiment command is `FaultInjectionEvaluator.main()`:
+`FaultInjectionEvaluator <repoPath> <baseRevision> [grown] [outputDir]`. It calls
+`FaultInjectionRunner` (which injects faults and runs the full suite to establish ground truth),
+maps each result to the `eval` model, prints the Markdown report, and writes
+`experiments/ground-truth-report.md` and `experiments/ground-truth-results.json`.
+Experiment result (17 faults at V16=7059f4c, grown sample): TP=37, FP=18, FN=0;
+precision=0.6727 (lower bound, D-16), recall=1.0000 (exact — no required test was missed).
+Two cases (`Calculator.negate`, `CheckoutService.quote`) had no failing tests and were not selected,
+so both precision and recall are `n/a`. Dataset limitation: single-line faults only; cases where a
+fault kills no test contribute `n/a` metrics but are still valid (the tool correctly selected
+nothing). GAP-17 CLOSED.
 
 | Component | Status | Evidence | Open gaps |
 |---|---|---|---|
-| Git access | VERIFIED | GitAnalyzerTest, GitAnalyzerListFilesTest in the full run | GAP-19 (.git must be a directory) |
-| Edge cases (untested, removed, deleted, new file) | VERIFIED | CLI and ChangeImpactAnalyzer tests in the full run | GAP-11 |
+| Git access | VERIFIED | GitAnalyzerTest, GitAnalyzerListFilesTest in the full run | none (GAP-19 closed by H9) |
+| Edge cases (untested, removed, deleted, new file) | VERIFIED | CLI and ChangeImpactAnalyzer tests in the full run, H7TestDiscoveryIntegrationTest (removed-method callers) | none (GAP-11 closed by H7) |
 | Reduction metrics | VERIFIED | EvaluationMetricsIntegrationTest | time reduction unreliable on small suites |
 | Sample project V1-V16 | VERIFIED | all 16 hashes resolve; tests pass at pinned revisions | repo is outside this repository |
 | Method change detection | IN PROGRESS | MethodChangeDetectorSafetyTest, NonMethodChangeDetectorTest pass | name-only identity (GAP-01, 06) |
-| Dependency graph, impact, selection | IN PROGRESS | tests pass | GAP-05, 07, 08, 09, 10, 13 |
-| CLI tools, test execution | IN PROGRESS | tests pass | GAP-14, 15, 16 |
-| Fault injection (9 at V8, 17 at V16) | VERIFIED for zero MISSED on these faults | FaultInjectionRunnerTest, FaultInjectionGrownSampleTest | single-line faults only, GAP-17 |
-| Sample path configurable | VERIFIED | SamplePathsTest | GAP-18 closed |
-| Phase 8B test generation | IN PROGRESS | see below | G8, TestSourceProvider |
-| Preflight, selection confidence | NOT STARTED | none | GAP-12 |
+| Member identity + arity-aware selection + constructors (H3) | VERIFIED | MemberIdTest, DependencyGraphArityTest, MemberChangeDetectorTest, MemberAwareSelectionIntegrationTest in docs/verification/2026-11-01-mvn-test-h3.txt | same-arity overloads collapse (GAP-01 partial); callee UNKNOWN (GAP-06); inheritance/override edges (GAP-05 partial) |
+| Class-level + build/resource triggers (H4) | VERIFIED | ChangedFileClassifierTest, NonMethodChangeDetectorTest, ChangeImpactAnalyzerBuildResourceFallbackTest in docs/verification/2026-11-01-mvn-test-h4.txt | build/resource changes only escalated, not analysed (GAP-04 partial); class-header triggers additive-only (GAP-03 partial) |
+| Dependency graph, impact, selection | IN PROGRESS | tests pass | GAP-05, GAP-13 (partial) |
+| Test discovery (H7) | VERIFIED | TestSourceProviderTest, H7TestDiscoveryIntegrationTest, ImpactSetExplanationChainTest in docs/verification/2026-11-01-mvn-test-h7.txt | enum/record test containers not inspected (GAP-13 partial); callee UNKNOWN in explanation chain (GAP-06) |
+| Impact depth configurable + truncation reporting (H6) | VERIFIED | ImpactAnalyzerDepthTest, SelectTestsCliTruncationTest in docs/verification/2026-11-01-mvn-test-h6.txt | GAP-07 closed by H6 |
+| CLI tools, test execution | IN PROGRESS | tests pass | enum/record discovery (GAP-13 partial) |
+| Execution hardening: isolated new-revision checkout, timeout, per-test results, compile-failure detection (H8) | VERIFIED | SurefireReportParserTest, TestRunnerParseResultTest, IsolatedRevisionCheckoutTest, TestRunnerExecutionHardeningTest, SelectTestsCliExecuteTest, TestRunnerIntegrationTest in docs/verification/2026-11-01-h8-focused-tests.txt | GAP-14, 15, 16 closed; timeout/compile/per-test proven on the sample project |
+| Fault injection (9 at V8, 17 at V16) | VERIFIED for zero MISSED on these faults | FaultInjectionRunnerTest, FaultInjectionGrownSampleTest | single-line faults only |
+| Ground-truth precision/recall evaluation (H10) | VERIFIED | PrecisionRecallTest, GroundTruthCaseTest, GroundTruthDatasetTest, EvaluationReportTest, GroundTruthEvaluatorTest, GroundTruthEvaluationIntegrationTest in docs/verification/2026-11-01-h10-focused-tests.txt; experiment in docs/verification/2026-11-01-h10-ground-truth-experiment.txt | GAP-17 closed; single-line faults only; 2 n/a cases (no failing tests) |
+| Sample path configurable with clear diagnostic (H2) | VERIFIED | SamplePathsTest in docs/verification/2026-11-01-mvn-test-h2.txt | GAP-18 closed |
+| Phase 8B test generation | IN PROGRESS | see below | G8 (fault-detection gain DONE), TestSourceProvider |
+| Selection confidence, typed parse errors, Java 17 level (H5) | VERIFIED | SelectionConfidenceTest, JavaParserAnalyzerTest, SelectTestsCliTest in docs/verification/2026-11-01-mvn-test-h5.txt | GAP-12 closed by H5 |
+| Preflight validation (H9) | VERIFIED | PreflightTest, PreflightResultTest, PreflightCliIntegrationTest in docs/verification/2026-11-01-h9-focused-tests.txt | GAP-19 closed by H9; multi-module/JUnit4/`.git` refusals and Spring/Mockito/Lombok/reflection REDUCED verified |
+| Live demo entry point (T1) | VERIFIED | DemoCliTest (8 tests in docs/verification/2026-11-02-t1-tests.txt), mvn package (executable shaded jar), java -jar, and live demo --execute on sample repo V4->V5 | none |
 | Backend, database, dashboard, report | NOT STARTED | none | GAP-26 |
 
 ## Phase 8B tasks
@@ -32,8 +209,8 @@ executes it and passes. Passing tests do not close a gap in the gap register.
 | G6 incremental update (hash, pinned oracle, accept, retire) | VERIFIED | IncrementalGeneratorTest and 4 other classes |
 | G7 execution of generated suite | VERIFIED on the sample | GeneratedSuiteRunnerIntegrationTest: 98 generated tests, 5 methods skipped, 115 of 115 passed at V16 |
 | G7 CLI (GenerateTestsCli) | VERIFIED | GenerateTestsCliTest, GenerateTestsCliRealHistoryTest |
-| TestSourceProvider (generated tests in selection) | NOT STARTED | none |
-| G8 metrics (coverage before/after, validity, fault-detection gain) | NOT STARTED | none |
+| TestSourceProvider (generated tests in selection) | NOT STARTED | H7 implements the manual-test provider (`impact/TestSourceProvider` discovers and associates `src/test/java/**.java`); the Phase 8B component that feeds generated tests through the same provider is still absent (the `--generated` CLI path already adds generated sources to the selection) |
+| G8 metrics (coverage before/after, validity, fault-detection gain) | PARTIAL — fault-detection gain DONE | `FaultDetectionExperimentTest` (14 tests) in docs/verification/2026-11-01-g8-focused-tests.txt; two-arm experiment in docs/verification/2026-11-01-g8-experiment.txt; results in experiments/fault-detection-report.md and experiments/fault-detection-results.json | coverage before/after and supported-vs-skipped still NOT STARTED |
 
 Real-history result (GenerateTestsCliRealHistoryTest): initial suite at V13 (98 tests);
 V13 to V14 reports TaxCalculator.calculateTax(int) as modified and BEHAVIOUR_CHANGED; V14 to V15
@@ -43,9 +220,20 @@ being gen_TaxCalculator_calculateTax_02, _04, _05 (the intended behaviour-change
 
 Caveats: the sample already had tests, so the no-existing-tests case is covered only up to
 compilation (TestGeneratorTest). Pinned oracles do not detect a change in a callee. Dependabot
-reports 1 moderate alert; package not yet identified. JDK 17 re-run outstanding.
+reports 1 moderate alert; package not yet identified.
 
-## Slow tests (launch Maven; add to CLAUDE.md section 4)
+JDK 17 execution verification is OUTSTANDING. Every recorded baseline so far was produced on
+JDK 23.0.2 compiling to target 17, so the required "JDK 17" runtime has never actually been
+executed. H5 configures the JavaParser language level to Java 17 (records, text blocks, switch
+expressions), but that is a parse-time setting, not proof that the suite runs on a JDK 17 VM.
+
+G8 metrics are PARTIAL. Fault-detection gain is DONE and measured (`FaultDetectionExperiment`,
+2026-11-01): on 17 single-line V16 faults, manual-only mutation score 15/17=0.8824 vs
+manual+generated 16/17=0.9412, additional detection = 1 (`Calculator.negate`), regressions = 0,
+undetected in both = 1 (`CheckoutService.quote`). Coverage-before/after and supported-vs-skipped
+are still NOT STARTED; no coverage-before/after figure alone may be read as G8 completion.
+
+## Slow tests (launch Maven; see SETUP_AND_EXECUTION_GUIDE.md section 4)
 TestRunnerIntegrationTest, EvaluationMetricsIntegrationTest, SelectTestsCliExecuteTest,
 ExperimentExecutorTest, ExperimentCliExecuteTest, FaultInjectionRunnerTest,
 FaultInjectionGrownSampleTest, GeneratedSuiteRunnerIntegrationTest, GenerateTestsCliRealHistoryTest.

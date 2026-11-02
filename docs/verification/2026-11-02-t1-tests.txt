@@ -1,0 +1,33 @@
+T1 verification evidence: runnable live demo entry point, packaging, and full test suite
+Project  : CODE-CHANGE-ANALYSIS (com.analysis.tool:CODE-CHANGE-ANALYSIS:1.0-SNAPSHOT)
+Date     : 2026-11-02T16:24:18+05:30
+Branch   : feature/complete-live-demo
+Command  : mvn -B clean test
+JDK      : openjdk 23.0.2 (BellSoft Liberica), Maven 3.9.16, compiler target 17
+Result   : Tests run: 356, Failures: 0, Errors: 0, Skipped: 0
+           BUILD SUCCESS (total time: 04:37 min)
+
+Summary of DemoCliTest:
+  com.analysis.tool.cli.DemoCliTest: 8 tests, 0 failures, 0 errors, 0 skipped
+
+Packaging verification:
+  Command: mvn -B package
+  Result : BUILD SUCCESS (total time: 04:43 min)
+  Artifact: target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar (Shaded executable JAR with all dependencies)
+
+Live demo static execution:
+  Command: java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+  Result : Exit code 0
+  Selected tests (2):
+    - testCompute
+    - testMultiply
+  Selection reasons:
+    - CalculatorTest#testCompute -> CalculatorTest#testCompute -> Calculator#compute -> Multiplier#multiply
+    - MultiplierTest#testMultiply -> MultiplierTest#testMultiply -> Multiplier#multiply
+
+Live demo with isolated Maven test execution:
+  Command: java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --execute
+  Result : Exit code 0
+  Full suite  : 5 tests, 5 passed, 0 failed, 0 errored, 0 skipped, build succeeded, compile ok
+  Selected run: 2 tests, 2 passed, 0 failed, 0 errored, 0 skipped, build succeeded, compile ok
+  Test reduction: 60.0%
