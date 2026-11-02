@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,8 +18,11 @@ import java.util.List;
  *   # 2. Live demo with real test execution and reduction measurement:
  *   java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --execute
  *
- *   # 3. Analyze any target repository across two Git revisions:
+ *   # 3. Analyze any target repository across two Git revisions (positional form):
  *   java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar &lt;repoPath&gt; &lt;baseRev&gt; &lt;targetRev&gt; [options...]
+ *
+ *   # 4. Same thing with named arguments (equivalent; used in the T3 live demo):
+ *   java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo="&lt;path&gt;" --base=&lt;baseRev&gt; --target=&lt;targetRev&gt; [options...]
  * </pre>
  *
  * <p>Sample repository resolution order (when no &lt;repoPath&gt; is given):
@@ -64,6 +66,15 @@ public class DemoCli {
                 options.add(arg);
             } else {
                 positional.add(arg);
+            }
+        }
+
+        // Mode 0: Named repository/revisions (--repo=/--base=/--target=) are
+        // passed straight through to SelectTestsCli, so the documented
+        // PowerShell form works without positional arguments.
+        for (String opt : options) {
+            if (opt.startsWith("--repo=") || opt.startsWith("--base=") || opt.startsWith("--target=")) {
+                return SelectTestsCli.run(args, out, err);
             }
         }
 
@@ -175,6 +186,7 @@ public class DemoCli {
         out.println("Usage:");
         out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar [options]");
         out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar <repoPath> <baseRev> <targetRev> [pairs...] [options]");
+        out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo=<path> --base=<baseRev> --target=<targetRev> [pairs...] [options]");
         out.println("  mvn exec:java [-Dexec.args=\"<arguments>\"]");
         out.println();
         out.println("Modes:");
@@ -188,8 +200,11 @@ public class DemoCli {
         out.println();
         out.println("  2. Custom Repository Analysis:");
         out.println("     <repoPath> <baseRev> <targetRev> [<sourceFile=testFile>...]");
+        out.println("     or --repo=<path> --base=<baseRev> --target=<targetRev> [pairs...]");
         out.println("     Analyzes code changes between two Git commits and selects affected tests.");
         out.println("     If no sourceFile=testFile pairs are given, they are auto-discovered.");
+        out.println("     Running this without --execute prints the full report: Git diff (A/M/D),");
+        out.println("     changed/impacted members, selected tests and a consolidated final report.");
         out.println();
         out.println("Options:");
         out.println("  --execute              Run both the full test suite and the selected tests in an isolated");
@@ -197,6 +212,10 @@ public class DemoCli {
         out.println("  --max-depth=<n|-1>     Cap impact traversal call hops (-1 for unlimited, default: -1).");
         out.println("  --timeout=<ms>         Timeout for isolated Maven test runs (default: 300000 ms).");
         out.println("  --generated=<dir>      Include generated tests from the specified output directory.");
+        out.println("  --generate             Generate tests for the target revision and use them in the analysis.");
+        out.println("                         Selected generated tests are run in the isolated checkout when");
+        out.println("                         combined with --execute.");
+        out.println("  --out=<dir>            Where --generate writes its suite (default: generated-tests).");
         out.println("  -v, --version          Print version information and exit.");
         out.println("  -h, --help             Show this help message and exit.");
         out.println();

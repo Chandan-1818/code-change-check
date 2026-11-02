@@ -1,11 +1,5 @@
 package com.analysis.tool.cli;
 
-import com.analysis.tool.git.GitAnalyzer;
-import com.analysis.tool.testgen.GeneratedTestWriter;
-import com.analysis.tool.testgen.IncrementalGenerator;
-import com.analysis.tool.testgen.TestEmitter;
-import com.analysis.tool.testgen.TestGenerator;
-
 import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+
+import com.analysis.tool.git.GitAnalyzer;
+import com.analysis.tool.testgen.GeneratedTestWriter;
+import com.analysis.tool.testgen.IncrementalGenerator;
+import com.analysis.tool.testgen.TestEmitter;
+import com.analysis.tool.testgen.TestGenerator;
 
 /**
  * Phase 8B / G7: command-line entry point for local test generation.
@@ -153,7 +153,12 @@ public class GenerateTestsCli {
         }
     }
 
-    private static List<String> readProductionSources(String repoPath, String revision) throws Exception {
+    /**
+     * Reads every {@code src/main/java/**.java} file as it exists at the given
+     * revision. Shared with {@link SelectTestsCli} so the live workflow can
+     * reuse the test generator instead of re-implementing source collection.
+     */
+    public static List<String> readProductionSources(String repoPath, String revision) throws Exception {
         GitAnalyzer git = new GitAnalyzer(repoPath);
         try {
             List<String> sources = new ArrayList<>();

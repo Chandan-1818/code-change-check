@@ -32,6 +32,13 @@ import java.util.Set;
  *   its selection, nearest node first and rendered as ClassName#methodName
  *   (e.g. [CalculatorTest#testCompute, Calculator#compute]), so every selected
  *   test can state why it was chosen.
+ * changedMembers (T3): the members that were analysed as changed, rendered
+ *   "Class#member" (a constructor as "Class#<init>"). This is what the
+ *   member-level detector actually fed into impact analysis.
+ * impactedMethods (T3): the methods the change reaches through the call
+ *   graph, rendered "Class#method", excluding the test methods themselves.
+ *   A callee whose declaring class could not be resolved (no Symbol Solver)
+ *   is rendered with the "UNKNOWN" class marker.
  */
 public class TestSelectionReport {
 
@@ -46,6 +53,8 @@ public class TestSelectionReport {
     private final boolean truncated;
     private final Set<String> potentiallyBrokenTests;
     private final Map<String, List<String>> explanations;
+    private final Set<String> changedMembers;
+    private final Set<String> impactedMethods;
 
     public TestSelectionReport(Set<String> selectedTests,
                                Set<String> selectedTestIdentifiers,
@@ -125,6 +134,31 @@ public class TestSelectionReport {
                                boolean truncated,
                                Set<String> potentiallyBrokenTests,
                                Map<String, List<String>> explanations) {
+        this(selectedTests, selectedTestIdentifiers, untestedChangedMethods,
+                removedMethods, conservativelyExpandedFiles, confidence,
+                unparsedFiles, buildOrResourceChanges, truncated,
+                potentiallyBrokenTests, explanations,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
+    }
+
+    /**
+     * Full form, adding the member-level detail the live workflow displays:
+     * the changed members that were analysed, and the methods the change
+     * reaches through the call graph.
+     */
+    public TestSelectionReport(Set<String> selectedTests,
+                               Set<String> selectedTestIdentifiers,
+                               Set<String> untestedChangedMethods,
+                               Set<String> removedMethods,
+                               Set<String> conservativelyExpandedFiles,
+                               SelectionConfidence confidence,
+                               Set<String> unparsedFiles,
+                               Set<String> buildOrResourceChanges,
+                               boolean truncated,
+                               Set<String> potentiallyBrokenTests,
+                               Map<String, List<String>> explanations,
+                               Set<String> changedMembers,
+                               Set<String> impactedMethods) {
         this.selectedTests = selectedTests;
         this.selectedTestIdentifiers = selectedTestIdentifiers;
         this.untestedChangedMethods = untestedChangedMethods;
@@ -136,6 +170,8 @@ public class TestSelectionReport {
         this.truncated = truncated;
         this.potentiallyBrokenTests = potentiallyBrokenTests;
         this.explanations = explanations;
+        this.changedMembers = changedMembers;
+        this.impactedMethods = impactedMethods;
     }
 
     public Set<String> getSelectedTests() { return selectedTests; }
@@ -149,4 +185,8 @@ public class TestSelectionReport {
     public boolean isTruncated() { return truncated; }
     public Set<String> getPotentiallyBrokenTests() { return potentiallyBrokenTests; }
     public Map<String, List<String>> getExplanations() { return explanations; }
+    /** Changed members that were analysed, rendered "Class#member". */
+    public Set<String> getChangedMembers() { return changedMembers; }
+    /** Methods the change reaches through the call graph, rendered "Class#method". */
+    public Set<String> getImpactedMethods() { return impactedMethods; }
 }

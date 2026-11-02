@@ -211,6 +211,38 @@ Executes both the full test suite and selected tests in an isolated checkout of 
 java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --execute
 ```
 
+### 3. End-to-End Live Workflow with Named Arguments (T3)
+
+The complete `Git Repository -> Git Diff -> Impact Analysis -> Test Selection -> Execution -> Report`
+workflow can be driven against any local Git repository with named arguments. This is the form used
+for the T3 demonstration (PowerShell):
+
+```powershell
+java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo="D:/PROJECT/SAMPLE-PROJECT/sample-project" --base=a3d0163 --target=268a165 --execute
+```
+
+`--repo`, `--base` and `--target` are exactly equivalent to the positional form
+`<repoPath> <baseRev> <targetRev>`; all three must be given. The run prints:
+
+1. the file-level Git diff with an `A`/`M`/`D` marker per changed, added and deleted file;
+2. the changed members and the impacted methods;
+3. the selected regression tests (existing tests and generated tests are listed separately);
+4. an isolated execution summary (full suite vs. selected run, test reduction);
+5. a consolidated **Final report**.
+
+Add test generation and execution of the generated suite to the same command:
+
+```powershell
+java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo="D:/PROJECT/SAMPLE-PROJECT/sample-project" --base=a3d0163 --target=268a165 --generate --out=generated-tests --execute
+```
+
+With `--generate`, a JUnit 5 characterization suite is generated for the target revision and fed into
+the *same* selection pipeline (it is never a second pipeline). With `--execute` added, generated tests
+that were selected are copied into the isolated target-revision checkout and actually compiled and run
+by Maven. A generated test is reported as `EXECUTED (confirmed by Maven Surefire)` **only** when the
+Surefire XML reports name the individual test; otherwise it is reported as `NOT confirmed by Maven` and
+counted as not executed. Generated tests carry a `[generated]` marker throughout the output.
+
 ---
 
 ## Command-Line Arguments & Options
@@ -221,13 +253,22 @@ java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --execute
 java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar <repoPath> <baseRev> <targetRev> [pairs...] [options]
 ```
 
-### Required Positional Arguments (When analyzing custom repositories)
+or, equivalently, with named arguments:
+
+```bash
+java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo=<repoPath> --base=<baseRev> --target=<targetRev> [pairs...] [options]
+```
+
+### Required Arguments (When analyzing custom repositories)
+
+All three of the following are required, in either the positional (`<repoPath> <baseRev> <targetRev>`)
+or the named (`--repo= --base= --target=`) form:
 
 | Argument | Description | Example |
 |---|---|---|
-| `<repoPath>` | Absolute or relative path to the target Git repository | `/path/to/sample-project` |
-| `<baseRev>` | Base Git commit hash or branch name | `a3d0163` |
-| `<targetRev>` | Target Git commit hash or branch name | `268a165` |
+| `<repoPath>` / `--repo=` | Absolute or relative path to the target Git repository | `D:/PROJECT/SAMPLE-PROJECT/sample-project` |
+| `<baseRev>` / `--base=` | Base Git commit hash or branch name | `a3d0163` |
+| `<targetRev>` / `--target=` | Target Git commit hash or branch name | `268a165` |
 
 ### Optional Arguments & Flags
 
@@ -237,9 +278,19 @@ java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar <repoPath> <baseRev> <tar
 | `--execute` | Runs tests via Maven in an isolated checkout and reports execution metrics | Disabled (static analysis only) |
 | `--max-depth=<n>` | Maximum call hops for impact traversal (`-1` for unlimited) | `-1` (unlimited) |
 | `--timeout=<ms>` | Maximum execution timeout for Maven test runs | `300000` (5 minutes) |
-| `--generated=<dir>` | Includes generated tests from `<dir>/src/test/java/rts/generated` | Disabled |
+| `--generated=<dir>` | Includes generated tests from `<dir>/src/test/java/rts/generated` in the selection | Disabled |
+| `--generate` | Generates a JUnit 5 suite for the target revision and includes it in the selection | Disabled |
+| `--out=<dir>` | Directory `--generate` writes its suite to | `generated-tests` |
 | `-h`, `--help` | Prints CLI usage guide and options | - |
 | `-v`, `--version` | Prints application version | - |
+
+### Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | Success (including runs that print selection warnings) |
+| `1` | Invalid arguments (too few arguments, malformed pair, missing named argument, unresolvable revision) |
+| `2` | Analysis failed (preflight refusal, missing repository, generation failure) |
 
 ---
 

@@ -226,6 +226,9 @@ public class ChangeImpactAnalyzer {
             Set<String> removedMethodNames = new HashSet<>();
             Set<String> expandedFiles = new java.util.TreeSet<>();
             Set<String> unparsedFiles = new java.util.TreeSet<>();
+            // T3: member-level detail for the live workflow's display.
+            Set<String> changedMemberLabels = new java.util.TreeSet<>();
+            Set<String> impactedMethodLabels = new java.util.TreeSet<>();
             List<String> allSources = new ArrayList<>();
 
             TestSourceProvider testSourceProvider = new TestSourceProvider();
@@ -330,6 +333,11 @@ public class ChangeImpactAnalyzer {
                 }
             }
 
+            // T3: render the analysed changed members once, for display.
+            for (MemberId member : changedMembers) {
+                changedMemberLabels.add(member.getClassName() + "#" + member.getMemberName());
+            }
+
             // H7: every test file under src/test/java at the new revision takes
             // part in the analysis, not only those paired by the Foo -> FooTest
             // convention. A non-conventionally named test file is associated
@@ -405,7 +413,9 @@ public class ChangeImpactAnalyzer {
                         removedMethodNames, expandedFiles,
                         confidence, unparsedFiles, buildOrResourceChanges, false,
                         potentiallyBrokenTests,
-                        Collections.<String, List<String>>emptyMap());
+                        Collections.<String, List<String>>emptyMap(),
+                        changedMemberLabels,
+                        Collections.<String>emptySet());
             }
 
             DependencyGraph graph =
@@ -427,6 +437,14 @@ public class ChangeImpactAnalyzer {
                                 maxDepth);
 
                 truncated = truncated || impactSet.isTruncated();
+
+                // T3: collect the impacted callers (excluding the test methods,
+                // which are listed separately) for the display.
+                for (MethodNode node : impactedNodes(impactSet)) {
+                    if (!testNodes.contains(node)) {
+                        impactedMethodLabels.add(node.getClassName() + "#" + node.getMethodName());
+                    }
+                }
 
                 Set<MethodNode> selectedForMember =
                         testNodesSelectedFor(impactSet, testNodes, lifecycleAttribution);
@@ -462,7 +480,8 @@ public class ChangeImpactAnalyzer {
                     untestedChangedMethods,
                     removedMethodNames, expandedFiles,
                     confidence, unparsedFiles, buildOrResourceChanges, truncated,
-                    potentiallyBrokenTests, explanations);
+                    potentiallyBrokenTests, explanations,
+                    changedMemberLabels, impactedMethodLabels);
 
         } finally {
             gitAnalyzer.close();

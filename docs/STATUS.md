@@ -1,6 +1,37 @@
 # Implementation status (evidence-based)
 
-Latest (2026-11-02, branch feature/complete-live-demo): T2 (isolated test-execution verification
+Latest (2026-11-02, branch feature/complete-live-demo): T3 (end-to-end live Git-diff and regression
+demo). `SelectTestsCli` now accepts the named arguments `--repo=<path> --base=<rev> --target=<rev>`
+(the positional form is unchanged) and prints a visible Git diff (`Git diff       : N file(s) changed
+between A and B (x added, y modified, z deleted)` followed by one `M`/`A`/`D`-marked path per changed
+file), the changed members (`Class#member`) and impacted methods (`Class#method`) it derived, the
+selected tests with their explanation chains, and a final report block (Repository, Revisions,
+Git diff, Changed members, Impacted methods, Selected tests, Untested methods, Confidence, Execution).
+Exit codes are 0 = success, 1 = invalid arguments (including an unresolvable revision) and 2 =
+analysis failed (including a preflight refusal). Generated tests are no longer analysis-only: with
+`--generate --out=<dir>` the generated sources are fed into the same pipeline, and when such a test is
+selected for execution its file is copied into the isolated target-revision checkout
+(`src/test/java/rts/generated`) before Maven runs, so it is compiled and executed there. The selection
+and the final report clearly distinguish the two arms (`[generated]` marker and
+`Selected tests   : N (E existing, G generated)`), and a generated test is reported `EXECUTED` /
+counted as confirmed only when Surefire reports a matching `class#method`, otherwise
+`NOT confirmed by Maven ... (not reported as executed)`. Execution never touches the caller's
+repository: it happens inside the temporary JGit clone, and the original sample repository was
+verified unchanged (`git status --porcelain` empty, HEAD still 7059f4c). Full suite 364 run,
+0 failures, 0 errors, 0 skipped, BUILD SUCCESS; focused CLI/execution suite 50 tests, BUILD SUCCESS;
+`mvn -B package` BUILD SUCCESS (364 tests, shaded JAR rebuilt). Live demo on the sample repository
+V4 (a3d0163) -> V5 (268a165): 1 file changed (`M src/main/java/com/sample/Multiplier.java`), 1 changed
+member (`Multiplier#multiply`), 2 impacted methods, 2 selected tests; `--execute` passed 5/5 full and
+2/2 selected (60.0% test reduction); the generated variant selected 26 tests (2 existing + 24
+generated) and confirmed 24/24 generated executed by Maven, exit code 0. Evidence:
+docs/verification/2026-11-02-t3-live-report.txt (named-arg static run),
+docs/verification/2026-11-02-t3-live-execute.txt (`--execute`),
+docs/verification/2026-11-02-t3-live-generated-execute.txt (`--generate --execute`),
+docs/verification/2026-11-02-t3-focused-tests.txt (50 focused tests),
+docs/verification/2026-11-02-t3-mvn-test-full.txt (364 tests) and
+docs/verification/2026-11-02-t3-mvn-package.txt (package).
+
+Previous (2026-11-02, branch feature/complete-live-demo): T2 (isolated test-execution verification
 and hardening). Verified that `--execute` checks out and executes tests against the exact analysed
 target revision (V5 = 268a165) inside an isolated temporary Git clone, never touching the caller's
 working tree or repository. Safety, cleanup, failure handling and timeout behaviour were exercised
@@ -217,6 +248,7 @@ nothing). GAP-17 CLOSED.
 | Preflight validation (H9) | VERIFIED | PreflightTest, PreflightResultTest, PreflightCliIntegrationTest in docs/verification/2026-11-01-h9-focused-tests.txt | GAP-19 closed by H9; multi-module/JUnit4/`.git` refusals and Spring/Mockito/Lombok/reflection REDUCED verified |
 | Live demo entry point (T1) | VERIFIED | DemoCliTest (8 tests in docs/verification/2026-11-02-t1-tests.txt), mvn package (executable shaded jar), java -jar, and live demo --execute on sample repo V4->V5 | none |
 | Isolated test execution verification & hardening (T2) | VERIFIED | 22 focused execution tests (IsolatedRevisionCheckoutTest, TestRunnerExecutionHardeningTest, SurefireReportParserTest, TestRunnerParseResultTest, SelectTestsCliExecuteTest) in docs/verification/2026-11-02-t2-focused-tests.txt; full suite + package in 2026-11-02-t2-mvn-test-full.txt / 2026-11-02-t2-mvn-package.txt; live runs in 2026-11-02-t2-live-execute.txt and 2026-11-02-t2-live-failure.txt | GAP-14, 15, 16 closed; deprecated `setForce` remains in 3 experiment classes (out of T2 scope) |
+| End-to-end live Git-diff and regression demo (T3) | VERIFIED | SelectTestsCliNamedArgsTest, SelectTestsCliGeneratedExecuteTest, DemoCliTest in docs/verification/2026-11-02-t3-focused-tests.txt; live runs in 2026-11-02-t3-live-report.txt / 2026-11-02-t3-live-execute.txt / 2026-11-02-t3-live-generated-execute.txt | generated tests are characterization tests (pinned oracles); callee class names remain UNKNOWN (GAP-06) |
 | Backend, database, dashboard, report | NOT STARTED | none | GAP-26 |
 
 ## Phase 8B tasks
@@ -254,5 +286,6 @@ are still NOT STARTED; no coverage-before/after figure alone may be read as G8 c
 
 ## Slow tests (launch Maven; see SETUP_AND_EXECUTION_GUIDE.md section 4)
 TestRunnerIntegrationTest, EvaluationMetricsIntegrationTest, SelectTestsCliExecuteTest,
-ExperimentExecutorTest, ExperimentCliExecuteTest, FaultInjectionRunnerTest,
-FaultInjectionGrownSampleTest, GeneratedSuiteRunnerIntegrationTest, GenerateTestsCliRealHistoryTest.
+SelectTestsCliGeneratedExecuteTest, ExperimentExecutorTest, ExperimentCliExecuteTest,
+FaultInjectionRunnerTest, FaultInjectionGrownSampleTest, GeneratedSuiteRunnerIntegrationTest,
+GenerateTestsCliRealHistoryTest.
