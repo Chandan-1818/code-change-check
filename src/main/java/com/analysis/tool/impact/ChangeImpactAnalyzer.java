@@ -229,6 +229,10 @@ public class ChangeImpactAnalyzer {
             // T3: member-level detail for the live workflow's display.
             Set<String> changedMemberLabels = new java.util.TreeSet<>();
             Set<String> impactedMethodLabels = new java.util.TreeSet<>();
+            // PHASE 11: the impacted set split into directly reached callers and
+            // callers reached only through a chain of calls.
+            Set<String> directlyImpactedLabels = new java.util.TreeSet<>();
+            Set<String> transitivelyImpactedLabels = new java.util.TreeSet<>();
             List<String> allSources = new ArrayList<>();
 
             TestSourceProvider testSourceProvider = new TestSourceProvider();
@@ -446,6 +450,18 @@ public class ChangeImpactAnalyzer {
                     }
                 }
 
+                // PHASE 11: split the display set into direct and transitive.
+                for (MethodNode node : impactSet.getDirectlyImpacted()) {
+                    if (!testNodes.contains(node)) {
+                        directlyImpactedLabels.add(node.getClassName() + "#" + node.getMethodName());
+                    }
+                }
+                for (MethodNode node : impactSet.getTransitivelyImpacted().keySet()) {
+                    if (!testNodes.contains(node)) {
+                        transitivelyImpactedLabels.add(node.getClassName() + "#" + node.getMethodName());
+                    }
+                }
+
                 Set<MethodNode> selectedForMember =
                         testNodesSelectedFor(impactSet, testNodes, lifecycleAttribution);
 
@@ -481,7 +497,8 @@ public class ChangeImpactAnalyzer {
                     removedMethodNames, expandedFiles,
                     confidence, unparsedFiles, buildOrResourceChanges, truncated,
                     potentiallyBrokenTests, explanations,
-                    changedMemberLabels, impactedMethodLabels);
+                    changedMemberLabels, impactedMethodLabels,
+                    directlyImpactedLabels, transitivelyImpactedLabels);
 
         } finally {
             gitAnalyzer.close();

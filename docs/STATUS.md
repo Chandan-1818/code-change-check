@@ -1,6 +1,56 @@
 # Implementation status (evidence-based)
 
-Latest (2026-11-02, branch feature/complete-live-demo): T3 (end-to-end live Git-diff and regression
+Latest (2026-11-02, branch feature/complete-live-demo, extends T3 commit ac8ea52): PHASE 1-14 of the
+MASTER prompt (interactive CLI + remote Git repository support + multi-language classification),
+added by extending the existing implementation (nothing was replaced or duplicated). New
+`cli/InteractiveCli` is a menu session (`--interactive`, or zero-argument from a real console):
+it prompts `Enter Git repository URL (or 'exit' to quit):`, validates and clones the URL into a
+temporary workspace, prints the repository/branch/latest/previous commit info, offers
+`Select comparison:` (latest two commits, or custom base/target) and an operations menu of six items
+(analyze / analyze+select / generate / analyze+generate+execute / full workflow / exit), returning to
+the menu after every operation and never crashing on empty input, an invalid URL, an invalid selection
+or end-of-input. New `cli/RemoteWorkflowCli` is the non-interactive remote form (`--url=<GIT_URL>
+[--base= --target=] [--generate] [--execute] [--yes]`): it defaults to the latest two commits of the
+default branch, requires `--yes` before running Maven from a cloned repository, and supports the full
+workflow. New `remote/RemoteRepository` validates a URL (`https`/`http`/`ssh`/`git`/scp-like/`file`),
+clones with a bounded timeout into a `rts-remote-*` temp directory, sanitises the project name against
+path traversal, redacts credentials, reports the default branch and the latest/previous commit, and
+deletes the workspace on close. New `workflow/AnalysisWorkflow` is the single orchestrator shared by
+every entry point and produces the PHASE-11 consolidated terminal report (REPOSITORY INFORMATION,
+PROJECT DISCOVERY, FILE CLASSIFICATION, CHANGE DETECTION, DEPENDENCY AND IMPACT ANALYSIS, REGRESSION
+TEST SELECTION with the `((total - selected) / total) * 100` reduction, AUTOMATIC TEST GENERATION,
+TEST EXECUTION, EXECUTION STATUS SUCCESS/PARTIAL SUCCESS/FAILED/NOT RUN, FINAL RESULT). PHASE 3
+multi-language classification was added additively to `impact/ChangedFileClassifier` (`FileCategory`
+A-H plus `categorize`, `isJavaChange`, `countByCategory`, `displayName`); the existing `Category`
+enum/`classify`/`isUnanalysableChange` behaviour is unchanged, so `ChangedFileClassifierTest` and the
+H4 FALLBACK behaviour are preserved. A change set with no Java change but a changed build/resource file
+still falls through to the real pipeline (conservative FALLBACK, all tests selected); a change set with
+only other-language/documentation/asset files prints the exact PHASE-10 sentence and reports NOT RUN
+without fabricating success. Exit codes: the local `SelectTestsCli` contract is unchanged (0/1/2); the
+remote and interactive entry points extend it with `3` (test execution failure) and `4` (repository
+cloning/network failure). Verification: focused suite 39 tests (InteractiveCliTest 8,
+RemoteWorkflowCliTest 10, RemoteRepositoryTest 9, ChangedFileClassifierCategoryTest 12) BUILD SUCCESS;
+`mvn -B clean test` 403 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS; `mvn -B package` 403 run,
+0 failures, BUILD SUCCESS (shaded JAR rebuilt). Live: remote `file://` workflow (1 changed file, 1
+changed method `Multiplier#multiply`, 5 existing tests, 2 selected, 60.0% reduction, HIGH, NOT RUN as
+`--execute` was not requested) exit 0; scripted interactive session exit 0; public
+`https://github.com/Chandan-1818/code-change-check.git` cloned and analysed (9 changed files, 82
+selected) exit 0; local T3 `--repo= --base= --target= --execute` still exit 0 (5/5 full, 2/2 selected,
+60.0% reduction). The sample repository was verified unchanged throughout (`git rev-parse HEAD`
+= 7059f4c, `git status --porcelain` empty) and the tool deletes its temporary workspace on close. Two
+stale `%TEMP%\rts-remote-*` directories remain from earlier test runs that had to be killed before
+their `finally` block ran; they are not produced by the current code. Evidence:
+docs/verification/2026-11-02-remote-interactive-verification-summary.txt,
+docs/verification/2026-11-02-remote-interactive-focused-tests.txt,
+docs/verification/2026-11-02-remote-interactive-mvn-test-full.txt,
+docs/verification/2026-11-02-remote-interactive-mvn-package.txt,
+docs/verification/2026-11-02-remote-interactive-live-interactive.txt,
+docs/verification/2026-11-02-remote-interactive-live-url.txt,
+docs/verification/2026-11-02-remote-interactive-live-public-url.txt,
+docs/verification/2026-11-02-remote-interactive-live-local-t3.txt and
+docs/verification/2026-11-02-remote-interactive-live-help-version.txt.
+
+Previous (2026-11-02, branch feature/complete-live-demo): T3 (end-to-end live Git-diff and regression
 demo). `SelectTestsCli` now accepts the named arguments `--repo=<path> --base=<rev> --target=<rev>`
 (the positional form is unchanged) and prints a visible Git diff (`Git diff       : N file(s) changed
 between A and B (x added, y modified, z deleted)` followed by one `M`/`A`/`D`-marked path per changed
@@ -249,6 +299,10 @@ nothing). GAP-17 CLOSED.
 | Live demo entry point (T1) | VERIFIED | DemoCliTest (8 tests in docs/verification/2026-11-02-t1-tests.txt), mvn package (executable shaded jar), java -jar, and live demo --execute on sample repo V4->V5 | none |
 | Isolated test execution verification & hardening (T2) | VERIFIED | 22 focused execution tests (IsolatedRevisionCheckoutTest, TestRunnerExecutionHardeningTest, SurefireReportParserTest, TestRunnerParseResultTest, SelectTestsCliExecuteTest) in docs/verification/2026-11-02-t2-focused-tests.txt; full suite + package in 2026-11-02-t2-mvn-test-full.txt / 2026-11-02-t2-mvn-package.txt; live runs in 2026-11-02-t2-live-execute.txt and 2026-11-02-t2-live-failure.txt | GAP-14, 15, 16 closed; deprecated `setForce` remains in 3 experiment classes (out of T2 scope) |
 | End-to-end live Git-diff and regression demo (T3) | VERIFIED | SelectTestsCliNamedArgsTest, SelectTestsCliGeneratedExecuteTest, DemoCliTest in docs/verification/2026-11-02-t3-focused-tests.txt; live runs in 2026-11-02-t3-live-report.txt / 2026-11-02-t3-live-execute.txt / 2026-11-02-t3-live-generated-execute.txt | generated tests are characterization tests (pinned oracles); callee class names remain UNKNOWN (GAP-06) |
+| Remote Git URL support (PHASE 2/12) | VERIFIED | RemoteRepositoryTest (9 tests), RemoteWorkflowCliTest (10 tests) in docs/verification/2026-11-02-remote-interactive-focused-tests.txt; live public clone in 2026-11-02-remote-interactive-live-public-url.txt and file:// in 2026-11-02-remote-interactive-live-url.txt | exit code 4 on clone/network failure; private repos need an external credential provider |
+| Interactive CLI session (PHASE 1) | VERIFIED | InteractiveCliTest (8 tests) in docs/verification/2026-11-02-remote-interactive-focused-tests.txt; scripted live session in 2026-11-02-remote-interactive-live-interactive.txt | zero-arg opens the menu only from a real console (DemoCliTest keeps the static demo) |
+| Multi-language classification A-H (PHASE 3) | VERIFIED | ChangedFileClassifierCategoryTest (12 tests) plus retained ChangedFileClassifierTest in docs/verification/2026-11-02-remote-interactive-focused-tests.txt | non-Java files are classified and reported, never parsed as Java |
+| Shared orchestrator + consolidated report (PHASE 11) | VERIFIED | RemoteWorkflowCliTest asserts every PHASE-11 section header; live reports in 2026-11-02-remote-interactive-live-url.txt / 2026-11-02-remote-interactive-live-interactive.txt | analysis-only status is NOT RUN; SUCCESS requires confirmed execution |
 | Backend, database, dashboard, report | NOT STARTED | none | GAP-26 |
 
 ## Phase 8B tasks

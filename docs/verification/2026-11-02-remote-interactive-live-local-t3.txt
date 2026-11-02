@@ -1,0 +1,49 @@
+﻿java : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3597
++ ... t@trae.ai'; java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar -- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Repository     : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Compared       : a3d0163 -> 268a165
+File pairs     : 3 (auto-discovered)
+Confidence     : HIGH
+Max depth      : unlimited
+Git diff       : 1 file(s) changed between a3d0163 and 268a165 (0 added, 1 modified, 0 deleted)
+  M src/main/java/com/sample/Multiplier.java
+Changed members (1):
+  - Multiplier#multiply
+Impacted methods (2):
+  - Calculator#compute
+  - UNKNOWN#multiply
+Selected tests (2):
+  - CalculatorTest#testCompute
+  - MultiplierTest#testMultiply
+Selection reasons:
+  - CalculatorTest#testCompute -> CalculatorTest#testCompute -> Calculator#compute -> Multiplier#multiply
+  - MultiplierTest#testMultiply -> MultiplierTest#testMultiply -> Multiplier#multiply
+
+Executing in an isolated checkout of 268a165 (this launches real Maven builds)...
+Target revision : 268a165
+Selected tests  : 2 selected
+Full suite      : 5 tests, 5 passed, 0 failed, 0 errored, 0 skipped, 5824 ms, build succeeded, compile ok
+Selected run    : 2 tests, 2 passed, 0 failed, 0 errored, 0 skipped, 4339 ms, build succeeded, compile ok
+Timed out       : no
+Test reduction  : 60.0%
+Time reduction  : 25.5% (informational - unreliable on small suites due to Maven/JVM startup overhead)
+
+================================================================================
+ Final report
+================================================================================
+Repository       : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Revisions        : a3d0163 -> 268a165
+Git diff         : 1 file(s) changed (0 added, 1 modified, 0 deleted)
+Changed members  : 1
+Impacted methods : 2
+Selected tests   : 2 (2 existing, 0 generated)
+Untested methods : 0
+Confidence       : HIGH
+Execution        : ran successfully

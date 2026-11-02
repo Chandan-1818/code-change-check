@@ -23,6 +23,13 @@ import java.util.List;
  *
  *   # 4. Same thing with named arguments (equivalent; used in the T3 live demo):
  *   java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo="&lt;path&gt;" --base=&lt;baseRev&gt; --target=&lt;targetRev&gt; [options...]
+ *
+ *   # 5. Interactive session (also started automatically when run with no
+ *   #    arguments on a real terminal):
+ *   java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --interactive
+ *
+ *   # 6. Analyze a remote Git repository (cloned into a temporary workspace):
+ *   java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --url=&lt;GIT_URL&gt; [--base=&lt;rev&gt; --target=&lt;rev&gt;] [--generate] [--execute --yes]
  * </pre>
  *
  * <p>Sample repository resolution order (when no &lt;repoPath&gt; is given):
@@ -69,7 +76,22 @@ public class DemoCli {
             }
         }
 
-        // Mode 0: Named repository/revisions (--repo=/--base=/--target=) are
+        // Mode 0a: Explicit interactive session.
+        for (String opt : options) {
+            if ("--interactive".equals(opt)) {
+                return InteractiveCli.run(out, err);
+            }
+        }
+
+        // Mode 0b: Remote Git repository URL (--url=<GIT_URL>) is handled by the
+        // remote workflow CLI, which clones the repository and runs the pipeline.
+        for (String opt : options) {
+            if (opt.startsWith("--url=")) {
+                return RemoteWorkflowCli.run(args, out, err);
+            }
+        }
+
+        // Mode 0c: Named repository/revisions (--repo=/--base=/--target=) are
         // passed straight through to SelectTestsCli, so the documented
         // PowerShell form works without positional arguments.
         for (String opt : options) {
@@ -80,6 +102,15 @@ public class DemoCli {
 
         // Mode 1: No positional arguments provided -> run canonical live demo
         if (positional.isEmpty()) {
+            // With no arguments at all and the process attached to the real
+            // terminal (not a supplied/piped stream), start the interactive
+            // session (PHASE 1). Any other caller keeps the non-interactive
+            // live-demo behaviour, so a test or a pipe never blocks on input.
+            if (options.isEmpty() && out == System.out && err == System.err
+                    && System.console() != null) {
+                return InteractiveCli.run(out, err);
+            }
+
             String repoPath = resolveSampleRepositoryPath();
             if (repoPath == null) {
                 err.println("Error: No sample repository specified and default sample project was not found.");
@@ -187,6 +218,8 @@ public class DemoCli {
         out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar [options]");
         out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar <repoPath> <baseRev> <targetRev> [pairs...] [options]");
         out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo=<path> --base=<baseRev> --target=<targetRev> [pairs...] [options]");
+        out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --url=<GIT_URL> [--base=<rev> --target=<rev>] [options]");
+        out.println("  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --interactive");
         out.println("  mvn exec:java [-Dexec.args=\"<arguments>\"]");
         out.println();
         out.println("Modes:");
@@ -206,7 +239,23 @@ public class DemoCli {
         out.println("     Running this without --execute prints the full report: Git diff (A/M/D),");
         out.println("     changed/impacted members, selected tests and a consolidated final report.");
         out.println();
+        out.println("  3. Remote Git Repository (Repository-Independent Workflow):");
+        out.println("     --url=<GIT_URL> [--base=<rev> --target=<rev>] [--generate] [--execute --yes]");
+        out.println("     Clones the repository into a dedicated temporary workspace and runs the");
+        out.println("     complete pipeline: classify files, detect Java changes, build the dependency");
+        out.println("     graph, analyse impact, select and generate tests, execute them in an isolated");
+        out.println("     checkout and verify the results with Maven Surefire.");
+        out.println("     The remote repository and any local clone are never modified or pushed to.");
+        out.println();
+        out.println("  4. Interactive Session:");
+        out.println("     --interactive (also started automatically when run with no arguments on a");
+        out.println("     real terminal) prompts for a Git repository URL and offers the operations");
+        out.println("     menu (analyze / select / generate / execute / full workflow / exit).");
+        out.println();
         out.println("Options:");
+        out.println("  --url=<GIT_URL>        Git repository URL (https/ssh/git/file, or user@host:path).");
+        out.println("  --interactive          Start the interactive repository workflow.");
+        out.println("  --yes                  Confirm execution of build scripts/tests from a remote repository.");
         out.println("  --execute              Run both the full test suite and the selected tests in an isolated");
         out.println("                         temporary checkout via Maven to measure test and time reduction.");
         out.println("  --max-depth=<n|-1>     Cap impact traversal call hops (-1 for unlimited, default: -1).");
@@ -223,5 +272,7 @@ public class DemoCli {
         out.println("  0 : Success (test selection / execution completed)");
         out.println("  1 : Invalid arguments or missing sample repository");
         out.println("  2 : Analysis failed or preflight validation refused repository");
+        out.println("  3 : Test execution failed");
+        out.println("  4 : Repository cloning or network failure");
     }
 }

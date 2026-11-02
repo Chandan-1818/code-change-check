@@ -1,0 +1,121 @@
+PHASE 16 - mandatory verification summary
+Date: 2026-11-02
+Branch: feature/complete-live-demo
+Base commit before this work: ac8ea52 (T3)
+Feature: Interactive CLI + remote Git repository support + multi-language classification
+
+============================================================
+A. INTERACTIVE CLI
+============================================================
+Command : java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --interactive
+Input   : file:///D:/PROJECT/SAMPLE-PROJECT/sample-project / 1 / 2 / 6
+Result  : exit 0. Banner "CHANGE-SENSITIVE REGRESSION TEST SELECTION SYSTEM",
+          "Enter Git repository URL (or 'exit' to quit):", "Repository URL received.",
+          repository/branch/commit info, "Select comparison:" menu (option 1 =
+          latest two commits), operations menu (1-6), the consolidated report,
+          "Returning to the operations menu.", "Exiting. Goodbye."
+Log     : 2026-11-02-remote-interactive-live-interactive.txt
+
+B. LOCAL ANALYSIS (T3 REGRESSION)
+============================================================
+Command : java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+          --repo="D:/PROJECT/SAMPLE-PROJECT/sample-project" --base=a3d0163
+          --target=268a165 --execute
+Result  : exit 0. Compared a3d0163 -> 268a165, Confidence HIGH, 2 selected tests,
+          Full suite 5 tests 5 passed, Selected run 2 tests 2 passed,
+          Timed out: no, Test reduction 60.0%.
+Log     : 2026-11-02-remote-interactive-live-local-t3.txt
+
+C. PUBLIC REMOTE CLONE
+============================================================
+Command : java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+          --url=https://github.com/Chandan-1818/code-change-check.git
+Result  : exit 0 (network available). Cloned into a temporary workspace,
+          default branch master, latest 4f393be / previous 57ae6f2,
+          9 changed files, 82 selected tests.
+Log     : 2026-11-02-remote-interactive-live-public-url.txt
+
+D. REMOTE WORKFLOW VIA file:// URL
+============================================================
+Command : java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+          --url=file:///D:/PROJECT/SAMPLE-PROJECT/sample-project
+          --base=a3d0163 --target=268a165
+Result  : exit 0. Full PHASE-11 report: 1 changed file (Java production 1),
+          1 changed method (Multiplier#multiply), 2 direct impacts,
+          Total existing tests 5, Selected 2 (60.0% reduction), Confidence HIGH,
+          EXECUTION STATUS NOT RUN ("Test execution was not requested.").
+Log     : 2026-11-02-remote-interactive-live-url.txt
+
+E. MULTI-LANGUAGE CLASSIFICATION (categories A-H)
+============================================================
+Tests   : ChangedFileClassifierCategoryTest (12 tests) - every category A-H,
+          real (non-hardcoded) counts, all-zero empty set, .java outside the
+          Maven roots reported as Java production but not analysable,
+          Windows separators, stable display names.
+Result  : Tests run 12, Failures 0, Errors 0.
+Log     : 2026-11-02-remote-interactive-focused-tests.txt
+
+F. NON-JAVA-ONLY CHANGES DO NOT TRIGGER JAVA GENERATION
+============================================================
+Covered by RemoteWorkflowCliTest.shouldExplainWhenOnlyNonJavaFilesChanged:
+the exact sentence "No supported Java source changes were detected. Java
+regression test generation was not required. Other-language changes were
+detected but are outside the current testing scope." plus "Other programming
+language files: 1" and EXECUTION STATUS NOT RUN.
+Log     : 2026-11-02-remote-interactive-focused-tests.txt (10 tests)
+
+G. MAVEN CONFIG CHANGES HANDLED CONSERVATIVELY
+============================================================
+Covered by RemoteWorkflowCliTest.shouldSelectConservativelyWhenOnlyTheBuildFileChanged:
+"A build file changed (pom.xml)", "Confidence: FALLBACK",
+"Build/resource changes (1)".
+Also retained: ChangeImpactAnalyzerBuildResourceFallbackTest (H4) in the full run.
+Log     : 2026-11-02-remote-interactive-focused-tests.txt,
+          2026-11-02-remote-interactive-mvn-test-full.txt
+
+H. ORIGINAL REPOSITORIES UNCHANGED
+============================================================
+Sample repository: git rev-parse HEAD = 7059f4ce95044b3e89b83edc78ef18a9e6e38a7d
+(before and after every run); git status --porcelain empty.
+The current repository was inspected with git status only; no reset/clean/stash
+was performed at any point.
+
+I. EXISTING T3 TESTS + CLI STILL WORK
+============================================================
+Full suite: Tests run 403, Failures 0, Errors 0, Skipped 0, BUILD SUCCESS.
+This includes SelectTestsCliNamedArgsTest, SelectTestsCliGeneratedExecuteTest,
+SelectTestsCliExecuteTest, DemoCliTest (8 tests) and the whole H2-H10 suite.
+Log     : 2026-11-02-remote-interactive-mvn-test-full.txt
+
+J. BUILD + PACKAGE
+============================================================
+mvn -B clean test  : Tests run 403, Failures 0, Errors 0, Skipped 0, BUILD SUCCESS.
+mvn -B package     : Tests run 403, Failures 0, Errors 0, Skipped 0, BUILD SUCCESS;
+                     shaded artifact target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar rebuilt.
+Logs    : 2026-11-02-remote-interactive-mvn-test-full.txt,
+          2026-11-02-remote-interactive-mvn-package.txt
+
+FOCUSED SUITE
+============================================================
+mvn -B -o test -Dtest=InteractiveCliTest,RemoteWorkflowCliTest,RemoteRepositoryTest,ChangedFileClassifierCategoryTest
+Result  : Tests run 39, Failures 0, Errors 0, Skipped 0, BUILD SUCCESS.
+          InteractiveCliTest 8, RemoteWorkflowCliTest 10, RemoteRepositoryTest 9,
+          ChangedFileClassifierCategoryTest 12.
+Log     : 2026-11-02-remote-interactive-focused-tests.txt
+
+TEMP WORKSPACE CLEANUP
+============================================================
+BEFORE the final remote run: 2 directories matching %TEMP%\rts-remote-*
+AFTER  the final remote run: 2 directories matching %TEMP%\rts-remote-*
+=> the current code deletes its temporary workspace on close (RemoteRepository
+   implements AutoCloseable and both RemoteWorkflowCli and InteractiveCli close
+   it in a finally block).
+The 2 directories that remain were created at 22:08 and 22:17 by earlier test
+runs that had to be KILLED (their processes were terminated before their
+finally block could run); they are not produced by the current code.
+
+CLI NAME NOTE
+============================================================
+The MASTER prompt refers to target/code-change-analysis.jar. This project really
+builds target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar (configured in pom.xml), so
+all documented commands use the real artifact name.

@@ -55,6 +55,8 @@ public class TestSelectionReport {
     private final Map<String, List<String>> explanations;
     private final Set<String> changedMembers;
     private final Set<String> impactedMethods;
+    private final Set<String> directlyImpactedMethods;
+    private final Set<String> transitivelyImpactedMethods;
 
     public TestSelectionReport(Set<String> selectedTests,
                                Set<String> selectedTestIdentifiers,
@@ -159,6 +161,33 @@ public class TestSelectionReport {
                                Map<String, List<String>> explanations,
                                Set<String> changedMembers,
                                Set<String> impactedMethods) {
+        this(selectedTests, selectedTestIdentifiers, untestedChangedMethods,
+                removedMethods, conservativelyExpandedFiles, confidence,
+                unparsedFiles, buildOrResourceChanges, truncated,
+                potentiallyBrokenTests, explanations, changedMembers, impactedMethods,
+                Collections.<String>emptySet(), Collections.<String>emptySet());
+    }
+
+    /**
+     * Full form, adding the direct/transitive split of the impacted methods so
+     * the multi-language report can print "Directly impacted" and
+     * "Transitively impacted" separately from the combined set.
+     */
+    public TestSelectionReport(Set<String> selectedTests,
+                               Set<String> selectedTestIdentifiers,
+                               Set<String> untestedChangedMethods,
+                               Set<String> removedMethods,
+                               Set<String> conservativelyExpandedFiles,
+                               SelectionConfidence confidence,
+                               Set<String> unparsedFiles,
+                               Set<String> buildOrResourceChanges,
+                               boolean truncated,
+                               Set<String> potentiallyBrokenTests,
+                               Map<String, List<String>> explanations,
+                               Set<String> changedMembers,
+                               Set<String> impactedMethods,
+                               Set<String> directlyImpactedMethods,
+                               Set<String> transitivelyImpactedMethods) {
         this.selectedTests = selectedTests;
         this.selectedTestIdentifiers = selectedTestIdentifiers;
         this.untestedChangedMethods = untestedChangedMethods;
@@ -172,6 +201,8 @@ public class TestSelectionReport {
         this.explanations = explanations;
         this.changedMembers = changedMembers;
         this.impactedMethods = impactedMethods;
+        this.directlyImpactedMethods = directlyImpactedMethods;
+        this.transitivelyImpactedMethods = transitivelyImpactedMethods;
     }
 
     public Set<String> getSelectedTests() { return selectedTests; }
@@ -189,4 +220,8 @@ public class TestSelectionReport {
     public Set<String> getChangedMembers() { return changedMembers; }
     /** Methods the change reaches through the call graph, rendered "Class#method". */
     public Set<String> getImpactedMethods() { return impactedMethods; }
+    /** Subset of the impacted methods reached in a single call hop. */
+    public Set<String> getDirectlyImpactedMethods() { return directlyImpactedMethods; }
+    /** Subset of the impacted methods reached only through a chain of calls. */
+    public Set<String> getTransitivelyImpactedMethods() { return transitivelyImpactedMethods; }
 }

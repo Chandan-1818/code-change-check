@@ -1,0 +1,56 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.analysis.tool:CODE-CHANGE-ANALYSIS >---------------
+[INFO] Building CODE-CHANGE-ANALYSIS 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory D:\PROJECT\CODE-CHANGE-ANALYSIS\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory D:\PROJECT\CODE-CHANGE-ANALYSIS\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 92 source files to D:\PROJECT\CODE-CHANGE-ANALYSIS\target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.analysis.tool.cli.InteractiveCliTest
+mvn : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3597
++ ... t@trae.ai'; mvn -B -o test "-Dtest=InteractiveCliTest,RemoteWorkflowC ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.957 s -- in com.analysis.tool.cli.InteractiveCliTest
+[INFO] Running com.analysis.tool.cli.RemoteWorkflowCliTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.126 s -- in com.analysis.tool.cli.RemoteWorkflowCliTest
+[INFO] Running com.analysis.tool.impact.ChangedFileClassifierCategoryTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.analysis.tool.impact.ChangedFileClassifierCategoryTest
+[INFO] Running com.analysis.tool.remote.RemoteRepositoryTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.636 s -- in com.analysis.tool.remote.RemoteRepositoryTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 39, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  24.417 s
+[INFO] Finished at: 2026-11-02T22:34:39+05:30
+[INFO] ------------------------------------------------------------------------
