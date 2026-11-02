@@ -1,6 +1,24 @@
 # Implementation status (evidence-based)
 
-Latest (2026-11-02, branch feature/complete-live-demo): T1 (runnable live demo entry point,
+Latest (2026-11-02, branch feature/complete-live-demo): T2 (isolated test-execution verification
+and hardening). Verified that `--execute` checks out and executes tests against the exact analysed
+target revision (V5 = 268a165) inside an isolated temporary Git clone, never touching the caller's
+working tree or repository. Safety, cleanup, failure handling and timeout behaviour were exercised
+end to end: 0 leaked `rts-checkout-*` temp directories before/after, sample repository left clean,
+and a forced timeout (`--timeout=1`) reported `Timed out: yes` with `build FAILED` and preserved the
+Maven log. Only one verified gap was fixed: `IsolatedRevisionCheckout` used the JGit 6.10-deprecated
+`CheckoutCommand.setForce(true)` (which only forces ref updates) and now uses `setForced(true)`,
+matching `git checkout --force`. No existing functionality was duplicated. Full suite 356 run,
+0 failures, 0 errors, 0 skipped, BUILD SUCCESS; `mvn -B package` BUILD SUCCESS (shaded JAR).
+Evidence: docs/verification/2026-11-02-t2-mvn-test-full.txt (356 tests),
+docs/verification/2026-11-02-t2-focused-tests.txt (22 focused execution tests),
+docs/verification/2026-11-02-t2-mvn-package.txt (package), docs/verification/2026-11-02-t2-live-execute.txt
+(live --execute) and docs/verification/2026-11-02-t2-live-failure.txt (timeout/failure path).
+Still open: three experiment classes (`GeneratedSuiteRunner`, `FaultInjectionRunner`,
+`FaultDetectionExperiment`) still call the deprecated `setForce(true)`; this is outside T2's
+"isolated execution only" scope and was left unchanged.
+
+Previous (2026-11-02, branch feature/complete-live-demo): T1 (runnable live demo entry point,
 packaging, and documentation). Full suite 356 run, 0 failures, 0 errors, 0 skipped,
 BUILD SUCCESS. Executable shaded JAR built via maven-shade-plugin (target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar)
 with main entry point DemoCli and exec-maven-plugin configured. Verified on sample repository
@@ -198,6 +216,7 @@ nothing). GAP-17 CLOSED.
 | Selection confidence, typed parse errors, Java 17 level (H5) | VERIFIED | SelectionConfidenceTest, JavaParserAnalyzerTest, SelectTestsCliTest in docs/verification/2026-11-01-mvn-test-h5.txt | GAP-12 closed by H5 |
 | Preflight validation (H9) | VERIFIED | PreflightTest, PreflightResultTest, PreflightCliIntegrationTest in docs/verification/2026-11-01-h9-focused-tests.txt | GAP-19 closed by H9; multi-module/JUnit4/`.git` refusals and Spring/Mockito/Lombok/reflection REDUCED verified |
 | Live demo entry point (T1) | VERIFIED | DemoCliTest (8 tests in docs/verification/2026-11-02-t1-tests.txt), mvn package (executable shaded jar), java -jar, and live demo --execute on sample repo V4->V5 | none |
+| Isolated test execution verification & hardening (T2) | VERIFIED | 22 focused execution tests (IsolatedRevisionCheckoutTest, TestRunnerExecutionHardeningTest, SurefireReportParserTest, TestRunnerParseResultTest, SelectTestsCliExecuteTest) in docs/verification/2026-11-02-t2-focused-tests.txt; full suite + package in 2026-11-02-t2-mvn-test-full.txt / 2026-11-02-t2-mvn-package.txt; live runs in 2026-11-02-t2-live-execute.txt and 2026-11-02-t2-live-failure.txt | GAP-14, 15, 16 closed; deprecated `setForce` remains in 3 experiment classes (out of T2 scope) |
 | Backend, database, dashboard, report | NOT STARTED | none | GAP-26 |
 
 ## Phase 8B tasks

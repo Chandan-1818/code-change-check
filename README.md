@@ -51,7 +51,7 @@ This project addresses these challenges by computing fine-grained, member-level 
    Performs a reverse breadth-first search (BFS) from the modified members through the call graph to find all reachable test methods. Unreached modified methods are flagged as warnings, and call chains are recorded as selection reasons.
 
 6. **Isolated Test Execution & Metrics (`IsolatedRevisionCheckout`, `TestRunner`):**  
-   When execution is requested (`--execute`), tests run inside an isolated temporary Git checkout of the target revision. Real Maven subprocesses execute the full suite and the selected suite, parsing Surefire XML reports to measure exact pass/fail counts, test count reduction (%), and execution time reduction (%).
+   When execution is requested (`--execute`), tests run inside an isolated temporary Git checkout of the target revision. Real Maven subprocesses execute the full suite and the selected suite, parsing Surefire XML reports to measure exact pass/fail counts, test count reduction (%), and execution time reduction (%). The checkout is created at the **exact analysed target revision** in the system temp directory, the caller's repository and working tree are never modified, and the temporary clone is deleted on completion. A run that exceeds `--timeout` has its whole process tree terminated and is reported distinctly as timed out, with the Maven log preserved for inspection.
 
 ---
 
