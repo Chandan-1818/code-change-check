@@ -1,6 +1,45 @@
 # Implementation status (evidence-based)
 
-Latest (2026-11-02, branch feature/complete-live-demo, extends T3 commit ac8ea52): PHASE 1-14 of the
+Latest (2026-11-03, branch feature/complete-live-demo, HEAD 3c15535): **M0 — repository audit and
+baseline verification (MASTER prompt M0–M10)**. Read-only audit; no production code was modified.
+Verified against the actual repository: branch `feature/complete-live-demo`, HEAD `3c15535`
+"feat: improve test generation and Maven classpath resolution" (2026-11-03), remote
+`https://github.com/Chandan-1818/code-change-check.git`, working tree clean and up to date with origin
+(the MASTER prompt's recorded `5e3d978` is superseded). Baseline `mvn -B clean test` on JDK 23.0.2
+(compiled to target 17): 407 run, 0 failures, 0 errors, 0 skipped, BUILD SUCCESS, 9:20 min — matches the
+historical 407, so the newest STATUS.md entry below (403) was stale. Evidence:
+docs/verification/2026-11-03-m0-baseline-mvn-test.txt. Audit findings by area (concrete file:line
+evidence): **(A) method/member impact** — IMPLEMENTED: constructors, added-method and deleted-method
+detection; PARTIAL: member identity (`className+memberName+arity+kind`, no parameter types),
+cross-class calls (callee class always `UNKNOWN` in `DependencyGraphBuilder`), class-level impact
+(whole-file expansion), static methods (no static/instance distinction), unresolved handling
+(`UNKNOWN` + name/arity fallback); NOT IMPLEMENTED: same-arity overload resolution by parameter type,
+inheritance, overrides, interface implementations, static imports, method references, renamed-method
+detection. Root cause: `javaparser-symbol-solver-core` is a declared dependency (pom.xml) but is not
+used anywhere. **(B) dependency graph / selection** — 12 of 16 capabilities IMPLEMENTED (graph build,
+method-to-method mapping, constructor deps, test-method deps, direct/transitive impact, configurable
+depth + truncation, changed-method→test mapping, explanations, dependency paths, conservative FALLBACK,
+added/modified/deleted/renamed files, build/resource handling); PARTIAL: explicit unresolved-dependency
+reporting; NOT IMPLEMENTED: explicit class-to-class map and a test-class (as opposed to test-method)
+dependency concept. Recorded ground truth (17 cases) TP=37/FP=18/FN=0, precision=0.6727, recall=1.0000,
+produced only by the standalone `eval` package (the production pipeline reports reduction % and
+confidence only). **(C) G1–G7** — all IMPLEMENTED with file evidence; `MavenClasspathResolver` is wired
+into `OracleCapture` via `GenerateTestsCli`→`TestGenerator`→`OracleCapture`. Correction to the status
+below: generated tests DO already flow through the same `TestSourceProvider` (`ChangeImpactAnalyzer`
+records `extraTestSources` and calls `testSourceProvider.discover(...)`), so the "TestSourceProvider
+(generated tests in selection) NOT STARTED" row is stale. Remaining real gap: `NoExistingTestsProofTest`
+covers generate→compile→execute but not regenerate/incremental or retire, so the mandatory
+"no-existing-tests" end-to-end requirement is PARTIAL. **(D) G8** — 4 of 17 metrics IMPLEMENTED (fault
+detection before/after, additional detections, regressions): manual-only 15/17=0.8824, manual+generated
+16/17=0.9412, additional=1 (`Calculator.negate`), regressions=0, undetected-in-both=1
+(`CheckoutService.quote`); 1 PARTIAL (total test count); 12 NOT IMPLEMENTED/NOT STARTED (existing and
+generated test counts, coverage before/after/improvement — `StaticCoverage` is not wired into any G8
+report, generated-test compilation success rate, execution pass rate, supported/skipped method counts,
+unsupported categories, generation time, incremental generation time). JSON+Markdown reports are written
+(experiments/fault-detection-*.{md,json}); division-by-zero is guarded. No production code changed in
+M0, so M0 is documentation + evidence only.
+
+Previous (2026-11-02, branch feature/complete-live-demo, extends T3 commit ac8ea52): PHASE 1-14 of the
 MASTER prompt (interactive CLI + remote Git repository support + multi-language classification),
 added by extending the existing implementation (nothing was replaced or duplicated). New
 `cli/InteractiveCli` is a menu session (`--interactive`, or zero-argument from a real console):
