@@ -33,11 +33,18 @@ import java.util.stream.Stream;
  * NONDETERMINISTIC. Nothing is written outside the temporary directory, which
  * is deleted afterwards.
  *
- * Version-1 limits: the target's main sources must compile with the JDK alone
- * (no third-party dependencies); every target package is wildcard-imported, so
- * a target class named like a JDK or tool class can clash; a compile error in
- * any source fails the whole capture (the message names the error).
+ * Version-1 limits: without a project classpath the target's main sources must
+ * compile with the JDK alone (no third-party dependencies); every target
+ * package is wildcard-imported, so a target class named like a JDK or tool
+ * class can clash; a compile error in any source fails the whole capture (the
+ * message names the error).
  * The target code is executed locally and is assumed to be trusted.
+ *
+ * When the analysed project declares third-party dependencies, the caller
+ * resolves its Maven classpath and passes it to
+ * {@link #capture(List, List, String)}; it is added to both the compilation
+ * classpath and the capture JVM's classpath, so Spring/Hibernate and other
+ * libraries are available exactly as in the project's own build.
  */
 public class OracleCapture {
 
@@ -60,9 +67,21 @@ public class OracleCapture {
     /** One outcome per case, in the same order as the cases. */
     public List<OracleOutcome> capture(List<String> targetSources, List<OracleCase> cases)
             throws IOException, InterruptedException {
+        return capture(targetSources, cases, "");
+    }
+
+    /**
+     * Same as {@link #capture(List, List)}, with the target project's own
+     * resolved classpath added to the compilation classpath and to the capture
+     * JVM's classpath. An empty (or null) classpath keeps the JDK-only
+     * behaviour used for plain Java projects.
+     */
+    public List<OracleOutcome> capture(List<String> targetSources, List<OracleCase> cases,
+                                       String projectClasspath) throws IOException, InterruptedException {
         if (cases.isEmpty()) {
             return new ArrayList<>();
         }
+        String dependencies = projectClasspath == null ? "" : projectClasspath.trim();
         Path work = Files.createTempDirectory("oracle-capture-");
         try {
             Path sourceDir = Files.createDirectories(work.resolve("src"));
@@ -74,10 +93,10 @@ public class OracleCapture {
             Files.writeString(harness, harnessSource(packages, cases), StandardCharsets.UTF_8);
             files.add(harness.toFile());
 
-            compile(files, classesDir);
+            compile(files, classesDir, dependencies);
 
-            List<OracleOutcome> first = runOnce(classesDir, work, "run1", cases.size());
-            List<OracleOutcome> second = runOnce(classesDir, work, "run2", cases.size());
+            List<OracleOutcome> first = runOnce(classesDir, work, "run1", cases.size(), dependencies);
+            List<OracleOutcome> second = runOnce(classesDir, work, "run2", cases.size(), dependencies);
             return merge(first, second);
         } finally {
             deleteRecursively(work);
@@ -146,7 +165,7 @@ public class OracleCapture {
         return files;
     }
 
-    private static void compile(List<File> files, Path classesDir) throws IOException {
+    private static void compile(List<File> files, Path classesDir, String projectClasspath) throws IOException {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
             throw new IllegalStateException("Oracle capture needs a JDK: no system Java compiler is available");
@@ -157,7 +176,7 @@ public class OracleCapture {
             Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
             List<String> options = Arrays.asList(
                     "-d", classesDir.toString(),
-                    "-classpath", runtimeLocation().toString(),
+                    "-classpath", classpathOf(runtimeLocation().toString(), projectClasspath),
                     "-proc:none", "-nowarn");
             boolean ok = compiler.getTask(null, fileManager, diagnostics, options, null, units).call();
             if (!ok) {
@@ -175,14 +194,14 @@ public class OracleCapture {
         }
     }
 
-    private List<OracleOutcome> runOnce(Path classesDir, Path work, String name, int caseCount)
-            throws IOException, InterruptedException {
+    private List<OracleOutcome> runOnce(Path classesDir, Path work, String name, int caseCount,
+                                        String projectClasspath) throws IOException, InterruptedException {
         Path output = work.resolve(name + ".out");
         List<String> command = List.of(
                 javaExecutable(),
                 "-Xmx256m",
                 "-D" + OracleRuntime.TIMEOUT_PROPERTY + "=" + caseTimeoutMs,
-                "-cp", classesDir + File.pathSeparator + runtimeLocation(),
+                "-cp", classpathOf(classesDir + File.pathSeparator + runtimeLocation(), projectClasspath),
                 HARNESS_CLASS);
         Process process = new ProcessBuilder(command)
                 .directory(work.toFile())
@@ -233,6 +252,14 @@ public class OracleCapture {
         Path bin = Path.of(System.getProperty("java.home"), "bin");
         Path exe = bin.resolve("java.exe");
         return Files.exists(exe) ? exe.toString() : bin.resolve("java").toString();
+    }
+
+    /** Appends the project's own classpath, if any, without leaving an empty entry. */
+    private static String classpathOf(String base, String projectClasspath) {
+        if (projectClasspath == null || projectClasspath.isEmpty()) {
+            return base;
+        }
+        return base + File.pathSeparator + projectClasspath;
     }
 
     /** Directory or jar holding OracleRuntime; put on the compile and run classpath. */

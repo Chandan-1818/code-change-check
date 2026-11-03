@@ -14,9 +14,20 @@ public class TestGenerator {
 
     public TestEmitter.Result generate(List<String> sources, String project, String revision)
             throws IOException, InterruptedException {
+        return generate(sources, project, revision, "");
+    }
+
+    /**
+     * Same as {@link #generate(List, String, String)}, but the target project's
+     * resolved Maven classpath is handed to the oracle capture, so production
+     * sources that use third-party libraries (Spring, Hibernate, ...) can be
+     * compiled and executed. Pass an empty classpath for a JDK-only project.
+     */
+    public TestEmitter.Result generate(List<String> sources, String project, String revision,
+                                       String projectClasspath) throws IOException, InterruptedException {
         List<DiscoveredMethod> discovered = new TargetDiscoverer().discover(sources);
         List<OracleCase> cases = new CasePlanner().plan(sources);
-        List<OracleOutcome> outcomes = new OracleCapture().capture(sources, cases);
+        List<OracleOutcome> outcomes = new OracleCapture().capture(sources, cases, projectClasspath);
         return new TestEmitter().emit(project, revision, discovered, cases, outcomes,
                 new MethodHasher().hash(sources), null, java.util.Collections.<String[]>emptyList());
     }

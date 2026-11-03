@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.analysis.tool.execution.IsolatedRevisionCheckout;
+import com.analysis.tool.execution.MavenClasspathResolver;
 import com.analysis.tool.execution.TestResult;
 import com.analysis.tool.execution.TestRunResult;
 import com.analysis.tool.execution.TestRunner;
@@ -771,8 +772,14 @@ public final class AnalysisWorkflow {
             }
             eligibleProductionMethods(result, generatedTestFiles);
 
+            // The target revision's own Maven classpath, so production sources
+            // that reference third-party libraries (Spring, Hibernate, ...) can
+            // be compiled and executed during oracle capture.
+            String projectClasspath = new MavenClasspathResolver()
+                    .resolve(options.repoPath, options.targetRevision);
+
             TestEmitter.Result genResult = new TestGenerator()
-                    .generate(productionSources, projectName, options.targetRevision);
+                    .generate(productionSources, projectName, options.targetRevision, projectClasspath);
             Path written = new GeneratedTestWriter().write(outRoot, projectName, options.targetRevision, genResult);
             for (Map.Entry<String, String> entry : genResult.getFiles().entrySet()) {
                 generatedTestFiles.put(fileName(entry.getKey()), entry.getValue());

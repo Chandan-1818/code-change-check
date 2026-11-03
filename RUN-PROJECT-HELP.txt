@@ -1,0 +1,168 @@
+==============================================================================
+ CHANGE-SENSITIVE REGRESSION TEST SELECTION SYSTEM
+ Launcher help
+==============================================================================
+
+This folder contains three helper files:
+
+  RUN-PROJECT.bat            One-click launcher: checks Java and Maven,
+                             builds the project (mvn -B package) and then
+                             starts the interactive application.
+
+  RUN-PROJECT-NO-BUILD.bat   Quick launcher: skips the build and starts the
+                             application from a JAR that was already built.
+                             It refuses to run a missing or invalid JAR.
+
+  RUN-PROJECT-HELP.txt       This file.
+
+
+------------------------------------------------------------------------------
+ HOW TO RUN (the simple way)
+------------------------------------------------------------------------------
+
+1. Double-click  RUN-PROJECT.bat
+2. Wait while the project is built.
+3. When the banner
+
+       CHANGE-SENSITIVE REGRESSION TEST SELECTION SYSTEM
+
+   and the prompt
+
+       Enter Git repository URL (or 'exit' to quit):
+
+   appear, paste a Git repository URL, for example:
+
+       https://github.com/Chandan-1818/code-change-check.git
+
+   and press Enter.
+4. Choose a comparison (latest two commits, or two revisions of your choice).
+5. Choose an operation from the menu:
+       1  Analyse repository changes
+       2  Analyse and select regression tests
+       3  Generate automatic JUnit tests
+       4  Analyse, generate and execute tests
+       5  Full regression testing workflow
+       6  Exit
+
+
+------------------------------------------------------------------------------
+ WHAT RUN-PROJECT.bat DOES, STEP BY STEP
+------------------------------------------------------------------------------
+
+  1. Detects the project directory (the folder that contains this file)
+     and switches to it. No absolute path is hard-coded.
+  2. Checks Java  (java -version). Stops with an error if Java is missing.
+  3. Checks Maven (mvn -version).  Stops with an error if Maven is missing.
+  4. Builds the project with  mvn -B package  and displays the build output.
+     If the build fails, the launcher stops and does NOT start the
+     application, so an outdated JAR is never launched.
+  5. Locates the executable shaded JAR in the target directory:
+         target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+     The non-shaded "original-*.jar" left behind by the Maven Shade plugin is
+     never selected.
+  6. Starts the interactive application:
+         java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --interactive
+
+  When the application exits, the window stays open until you press a key.
+
+
+------------------------------------------------------------------------------
+ WHEN TO USE RUN-PROJECT-NO-BUILD.bat
+------------------------------------------------------------------------------
+
+Use it when the project has already been built and you only want to start the
+application again. It is much faster because it does not invoke Maven.
+
+  * It works only if target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar already
+    exists. Otherwise it stops with an error telling you to build first.
+  * Before starting, it verifies that the JAR is really executable
+    (java -jar <jar> --version). A missing, incomplete or non-shaded JAR is
+    never launched.
+
+Use RUN-PROJECT.bat after you change the source code, so the JAR is rebuilt.
+
+
+------------------------------------------------------------------------------
+ REQUIREMENTS
+------------------------------------------------------------------------------
+
+  * JDK 17 or higher, with "java" on the PATH      (check: java -version)
+  * Apache Maven 3.8 or higher, with "mvn" on PATH (check: mvn -version)
+  * An internet connection if you analyse a remote repository
+
+You can also run "mvn -version" and "java -version" in a terminal to confirm
+both tools are installed before using the launchers.
+
+
+------------------------------------------------------------------------------
+ ERROR MESSAGES AND WHAT TO DO
+------------------------------------------------------------------------------
+
+  [ERROR] Java is not available on this system.
+      Install a JDK 17+ and add its bin folder to the PATH. Confirm with
+      "java -version", then run the launcher again.
+
+  [ERROR] Apache Maven is not available on this system.
+      Install Maven 3.8+ and add its bin folder to the PATH. Confirm with
+      "mvn -version", then run the launcher again.
+
+  [ERROR] pom.xml was not found ...
+      The launcher is not in the project root. Move it next to pom.xml
+      (or double-click the copy inside the project folder).
+
+  [ERROR] The Maven build FAILED - the application was NOT started.
+      Read the compilation or test errors printed above, fix them, then run
+      the launcher again. No JAR is started after a failed build.
+
+  [ERROR] No executable JAR was found in the target directory.
+      Build the project first (RUN-PROJECT.bat or "mvn -B package").
+
+  [ERROR] The JAR found was not runnable: ...
+      The artifact is incomplete or is the non-shaded JAR. Rebuild with
+      RUN-PROJECT.bat or "mvn -B package".
+
+  [ERROR] The application exited with code N.
+      The application itself reported a failure. Exit codes are:
+         0  success
+         1  invalid arguments / missing sample repository
+         2  analysis failed or preflight validation refused the repository
+         3  test execution failed
+         4  repository cloning or network failure
+
+Every error path leaves the window open (pause) so the message can be read.
+
+
+------------------------------------------------------------------------------
+ ADVANCED USAGE (terminal, no launchers)
+------------------------------------------------------------------------------
+
+A terminal gives you the full command-line interface, including the
+non-interactive forms:
+
+  Interactive session:
+      java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --interactive
+
+  Remote repository URL:
+      java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --url=https://github.com/owner/repo.git
+
+  Remote repository, generate and execute tests (explicit consent required):
+      java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --url=https://github.com/owner/repo.git --generate --execute --yes
+
+  A local repository between two revisions:
+      java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo="D:/path/to/repo" --base=a3d0163 --target=268a165 --execute
+
+  Help and version:
+      java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --help
+      java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --version
+
+
+------------------------------------------------------------------------------
+ NOTES
+------------------------------------------------------------------------------
+
+  * The launchers never modify your Git repositories: a remote URL is cloned
+    into a temporary workspace that is deleted afterwards, and execution runs
+    in an isolated checkout of the chosen revision.
+  * The launchers never delete target files or any other data.
+  * Both launchers work from Windows Command Prompt and from PowerShell.
+==============================================================================

@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
+import com.analysis.tool.execution.MavenClasspathResolver;
 import com.analysis.tool.git.GitAnalyzer;
 import com.analysis.tool.testgen.GeneratedTestWriter;
 import com.analysis.tool.testgen.IncrementalGenerator;
@@ -109,11 +111,16 @@ public class GenerateTestsCli {
             out.println("Mode           : " + (previous == null ? "initial" : "incremental from " + previous));
             out.println("Sources        : " + sources.size() + " production file(s)");
 
+            // The target project's own Maven classpath, so production sources
+            // that use third-party libraries (Spring, Hibernate, ...) compile.
+            String projectClasspath = new MavenClasspathResolver().resolve(repoPath, revision);
+            out.println("Classpath      : " + describeClasspath(projectClasspath));
+
             TestEmitter.Result result;
             Set<String> behaviourChanged = new TreeSet<>();
 
             if (previous == null) {
-                result = new TestGenerator().generate(sources, project, revision);
+                result = new TestGenerator().generate(sources, project, revision, projectClasspath);
             } else {
                 Path previousManifest = root.resolve(project).resolve(previous).resolve("manifest.json");
                 if (!Files.exists(previousManifest)) {
@@ -122,7 +129,8 @@ public class GenerateTestsCli {
                 }
                 String json = Files.readString(previousManifest, StandardCharsets.UTF_8);
                 IncrementalGenerator.Outcome outcome =
-                        new IncrementalGenerator().generate(json, sources, project, revision, accepted);
+                        new IncrementalGenerator().generate(json, sources, project, revision, accepted,
+                                projectClasspath);
                 result = outcome.getResult();
                 behaviourChanged = outcome.getBehaviourChanged();
 
@@ -171,6 +179,16 @@ public class GenerateTestsCli {
         } finally {
             git.close();
         }
+    }
+
+    /** Short, readable summary of a resolved classpath; the full value stays out of the report. */
+    private static String describeClasspath(String projectClasspath) {
+        if (projectClasspath == null || projectClasspath.isEmpty()) {
+            return "JDK only (the project declares no Maven dependencies at this revision)";
+        }
+        int entries = projectClasspath.split(Pattern.quote(File.pathSeparator)).length;
+        return entries + " classpath entr" + (entries == 1 ? "y" : "ies")
+                + " resolved from the project's Maven configuration";
     }
 
     private static void printKeys(PrintStream out, String title, Set<String> keys) {

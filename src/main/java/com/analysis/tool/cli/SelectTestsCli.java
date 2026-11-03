@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.analysis.tool.execution.IsolatedRevisionCheckout;
+import com.analysis.tool.execution.MavenClasspathResolver;
 import com.analysis.tool.execution.TestResult;
 import com.analysis.tool.execution.TestRunResult;
 import com.analysis.tool.execution.TestRunner;
@@ -321,8 +322,17 @@ public class SelectTestsCli {
                     err.println("Generation failed: no .java files under src/main/java at " + newRevision);
                     return 2;
                 }
+                // Resolve the target revision's own Maven classpath, so the oracle
+                // capture compiles production sources that use Spring/Hibernate.
+                String projectClasspath;
+                try {
+                    projectClasspath = new MavenClasspathResolver().resolve(repoPath, newRevision);
+                } catch (IOException e) {
+                    err.println("Generation failed: " + e.getMessage());
+                    return 2;
+                }
                 TestEmitter.Result genResult =
-                        new TestGenerator().generate(productionSources, projectName, newRevision);
+                        new TestGenerator().generate(productionSources, projectName, newRevision, projectClasspath);
                 Path written = new GeneratedTestWriter().write(outRoot, projectName, newRevision, genResult);
                 for (Map.Entry<String, String> entry : genResult.getFiles().entrySet()) {
                     generatedTestFiles.put(fileName(entry.getKey()), entry.getValue());

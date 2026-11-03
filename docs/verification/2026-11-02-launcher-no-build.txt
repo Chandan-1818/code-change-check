@@ -1,0 +1,23 @@
+﻿========================================================
+ CHANGE-SENSITIVE REGRESSION TEST SELECTION SYSTEM
+========================================================
+
+Starting application...
+
+Checking Java...
+Locating executable JAR...
+Verifying executable JAR...
+
+Starting regression testing application...
+
+========================================================
+
+================================================================
+ CHANGE-SENSITIVE REGRESSION TEST SELECTION SYSTEM
+================================================================
+
+Enter Git repository URL (or 'exit' to quit): Exiting. Goodbye.
+
+Application closed normally.
+
+Press any key to continue . . . 

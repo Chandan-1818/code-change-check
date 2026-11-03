@@ -37,9 +37,21 @@ public class IncrementalGenerator {
     public Outcome generate(String previousManifestJson, List<String> sources, String project,
                             String revision, Set<String> acceptedMethodKeys)
             throws IOException, InterruptedException {
+        return generate(previousManifestJson, sources, project, revision, acceptedMethodKeys, "");
+    }
+
+    /**
+     * Same as {@link #generate(String, List, String, String, Set)}, with the
+     * target project's resolved Maven classpath handed to the oracle capture so
+     * production sources that use third-party libraries can be compiled and
+     * executed. Pass an empty classpath for a JDK-only project.
+     */
+    public Outcome generate(String previousManifestJson, List<String> sources, String project,
+                            String revision, Set<String> acceptedMethodKeys, String projectClasspath)
+            throws IOException, InterruptedException {
         List<DiscoveredMethod> discovered = new TargetDiscoverer().discover(sources);
         List<OracleCase> cases = new CasePlanner().plan(sources);
-        List<OracleOutcome> outcomes = new OracleCapture().capture(sources, cases);
+        List<OracleOutcome> outcomes = new OracleCapture().capture(sources, cases, projectClasspath);
         return apply(previousManifestJson, sources, project, revision, acceptedMethodKeys,
                 discovered, cases, outcomes);
     }
