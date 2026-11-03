@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -70,7 +71,8 @@ public class ImpactAnalyzer {
                 seeds.add(node);
             }
         }
-        return analyze(graph, seeds, Collections.<MethodNode, Integer>emptyMap(), maxDepth);
+        return analyze(graph, seeds, Collections.<MethodNode, Integer>emptyMap(),
+                Collections.<MethodNode, List<String>>emptyMap(), maxDepth);
     }
 
     /**
@@ -91,6 +93,7 @@ public class ImpactAnalyzer {
 
         Set<MethodNode> seeds = new HashSet<>();
         Map<MethodNode, Integer> seedArities = new HashMap<>();
+        Map<MethodNode, List<String>> seedParameterTypes = new HashMap<>();
 
         for (MemberId member : changedMembers) {
             Set<MethodNode> matches = matchNodes(graph, member);
@@ -105,10 +108,20 @@ public class ImpactAnalyzer {
                     // arities, so arity cannot narrow the first hop.
                     seedArities.put(node, MemberId.UNKNOWN_ARITY);
                 }
+
+                List<String> types = member.getParameterTypes();
+                List<String> existingTypes = seedParameterTypes.get(node);
+                if (existingTypes == null) {
+                    seedParameterTypes.put(node, types);
+                } else if (!existingTypes.equals(types)) {
+                    // The node stands for members with different parameter
+                    // types, so type information cannot narrow the first hop.
+                    seedParameterTypes.put(node, Collections.<String>emptyList());
+                }
             }
         }
 
-        return analyze(graph, seeds, seedArities, maxDepth);
+        return analyze(graph, seeds, seedArities, seedParameterTypes, maxDepth);
     }
 
     private void validateDepth(int maxDepth) {
@@ -143,6 +156,7 @@ public class ImpactAnalyzer {
             DependencyGraph graph,
             Set<MethodNode> seeds,
             Map<MethodNode, Integer> seedArities,
+            Map<MethodNode, List<String>> seedParameterTypes,
             int maxDepth) {
 
         Set<MethodNode> changedNodes = new HashSet<>(seeds);
@@ -162,7 +176,7 @@ public class ImpactAnalyzer {
             int levelSize = queue.size();
             for (int i = 0; i < levelSize; i++) {
                 MethodNode current = queue.poll();
-                for (MethodNode caller : callersOf(graph, current, depth, seedArities)) {
+                for (MethodNode caller : callersOf(graph, current, depth, seedArities, seedParameterTypes)) {
                     if (!visited.contains(caller)) {
                         visited.add(caller);
                         parents.put(caller, current);
@@ -192,7 +206,8 @@ public class ImpactAnalyzer {
             DependencyGraph graph,
             MethodNode current,
             int depth,
-            Map<MethodNode, Integer> seedArities) {
+            Map<MethodNode, Integer> seedArities,
+            Map<MethodNode, List<String>> seedParameterTypes) {
 
         if (depth == 1) {
             Integer arity = seedArities.get(current);
@@ -205,6 +220,13 @@ public class ImpactAnalyzer {
                         arity == null ? MemberId.UNKNOWN_ARITY : arity);
             }
             if (arity != null && arity >= 0) {
+                List<String> declaredTypes = seedParameterTypes.get(current);
+                if (declaredTypes != null && !declaredTypes.isEmpty()) {
+                    // Same-arity overloads: narrow by the changed member's
+                    // declared parameter types (M1).
+                    return graph.getCallersByMethodNameAndTypes(
+                            current.getMethodName(), arity, declaredTypes);
+                }
                 return graph.getCallersByMethodNameAndArity(current.getMethodName(), arity);
             }
         }

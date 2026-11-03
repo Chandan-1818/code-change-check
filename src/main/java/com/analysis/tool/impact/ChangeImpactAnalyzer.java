@@ -519,19 +519,22 @@ public class ChangeImpactAnalyzer {
     /** Maps an extracted member to its identity (method or constructor). */
     private MemberId toMemberId(MethodInfo member) {
         if (MemberId.CONSTRUCTOR_NAME.equals(member.getName())) {
-            return MemberId.forConstructor(member.getClassName(), member.getArity());
+            return MemberId.forConstructor(
+                    member.getClassName(), member.getArity(), member.getParameterTypes());
         }
-        return MemberId.forMethod(member.getClassName(), member.getName(), member.getArity());
+        return MemberId.forMethod(
+                member.getClassName(), member.getName(), member.getArity(), member.getParameterTypes());
     }
 
     /**
      * Disables arity-based narrowing for a varargs member: a varargs call site
      * may supply any number of arguments, so the declared arity is not a safe
-     * filter (conservative fallback, never under-selects).
+     * filter (conservative fallback, never under-selects). Parameter-type
+     * narrowing is dropped for the same reason.
      */
     private MemberId disableArityIfVarargs(MemberId member, Map<MemberId, Boolean> varargsById) {
         if (Boolean.TRUE.equals(varargsById.get(member))) {
-            return member.withArity(MemberId.UNKNOWN_ARITY);
+            return member.withArity(MemberId.UNKNOWN_ARITY).withoutParameterTypes();
         }
         return member;
     }

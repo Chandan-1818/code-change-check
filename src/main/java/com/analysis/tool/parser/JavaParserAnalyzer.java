@@ -67,7 +67,8 @@ public class JavaParserAnalyzer {
                     bodyText,
                     header,
                     declaration.getParameters().size(),
-                    hasVarargs(declaration.getParameters())));
+                    hasVarargs(declaration.getParameters()),
+                    parameterTypeNames(declaration.getParameters())));
         }
         return methods;
     }
@@ -91,9 +92,22 @@ public class JavaParserAnalyzer {
                     bodyText,
                     header,
                     declaration.getParameters().size(),
-                    hasVarargs(declaration.getParameters())));
+                    hasVarargs(declaration.getParameters()),
+                    parameterTypeNames(declaration.getParameters())));
         }
         return constructors;
+    }
+
+    /**
+     * The declared parameter type names in order, normalised to their simple
+     * form (M1). Used for overload identity and conservative type matching.
+     */
+    private static List<String> parameterTypeNames(List<Parameter> parameters) {
+        List<String> types = new ArrayList<>();
+        for (Parameter parameter : parameters) {
+            types.add(MemberId.simpleTypeName(parameter.getTypeAsString()));
+        }
+        return types;
     }
 
     private static String enclosingTypeName(Node node, String fallback) {

@@ -39,6 +39,34 @@ unsupported categories, generation time, incremental generation time). JSON+Mark
 (experiments/fault-detection-*.{md,json}); division-by-zero is guarded. No production code changed in
 M0, so M0 is documentation + evidence only.
 
+Latest (2026-11-03, branch feature/complete-live-demo): **M1 — method identity and overload
+resolution (MASTER prompt M1)** — VERIFIED. Member identity is now type-aware: `MemberId` carries the
+declared parameter type names (simple form) in addition to `className + memberName + arity + kind`, so
+two overloads that share a name AND an arity but differ in parameter type (`f(int)` vs `f(String)`) are
+distinct. When the declared types are unknown the identity degrades exactly to the previous behaviour
+(empty type list) and can only over-select. Files changed (production): `graph/MemberId.java`
+(type-aware identity, `simpleTypeName`, `possiblyCompatible`, `UNKNOWN_TYPE`), `parser/MethodInfo.java`
+(carries `parameterTypes`), `parser/JavaParserAnalyzer.java` (extracts declared parameter types),
+`impact/MemberChangeDetector.java` and `impact/ChangeImpactAnalyzer.java` (build type-aware MemberIds),
+`graph/DependencyGraphBuilder.java` (infers literal/`new X(...)`/cast argument types at every call
+site), `graph/DependencyGraph.java` (accumulates per-edge call-site arities AND argument-type lists;
+adds `getCallersByMethodNameAndTypes`), `impact/ImpactAnalyzer.java` (narrows the FIRST hop by declared
+parameter types when known). Conservative by construction: an unknown argument type, an edge with no
+usable type evidence, or a caller that invokes several overloads all KEEP the caller, so type narrowing
+can only remove a caller that provably passes incompatible arguments to a same-arity overload. Also
+fixed a latent recall bug: call-site arity/type metadata was previously overwritten by the last call
+site on an edge; it is now accumulated, so no earlier call site is lost. Tests added: `MemberIdTest`
+(+5: same-arity type separation, degradation, `possiblyCompatible`, `simpleTypeName`),
+`DependencyGraphOverloadTypeTest` (new, 5) and `ImpactAnalyzerOverloadTypeTest` (new, 3). Verification:
+focused suite 19 tests (MemberIdTest 8, DependencyGraphOverloadTypeTest 5, ImpactAnalyzerOverloadTypeTest
+3, DependencyGraphArityTest 3) BUILD SUCCESS; `mvn -B clean test` 420 run, 0 failures, 0 errors, 0
+skipped, BUILD SUCCESS, 7:30 min; `mvn -B clean package` 420 run, 0 failures, BUILD SUCCESS (shaded JAR
+rebuilt). Evidence: docs/verification/2026-11-03-m1-mvn-test.txt,
+docs/verification/2026-11-03-m1-mvn-package.txt. Known limitations still open for later milestones:
+cross-class callee resolution (callee class still `UNKNOWN`), inheritance/overrides/interfaces, static
+imports, method references and renamed-method detection (M2/Area A); the explicit
+RESOLVED/AMBIGUOUS/UNKNOWN/UNSUPPORTED resolution-state vocabulary is not yet modelled (target: M3).
+
 Previous (2026-11-02, branch feature/complete-live-demo, extends T3 commit ac8ea52): PHASE 1-14 of the
 MASTER prompt (interactive CLI + remote Git repository support + multi-language classification),
 added by extending the existing implementation (nothing was replaced or duplicated). New

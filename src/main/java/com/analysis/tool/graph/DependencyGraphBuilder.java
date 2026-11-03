@@ -1,16 +1,22 @@
 package com.analysis.tool.graph;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 
 /**
@@ -32,8 +38,9 @@ import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
  * constructor callee node is MethodNode(X, "&lt;init&gt;") with a RESOLVED
  * class. This lets a constructor change be matched precisely.
  *
- * Every edge records the call-site argument count, so overloads that differ
- * in arity can be told apart at the first impact hop.
+ * Every edge records the call-site argument count and, where syntactically
+ * inferable, the argument types, so overloads that differ in arity OR in
+ * parameter type can be told apart at the first impact hop (M1).
  */
 public class DependencyGraphBuilder {
 
@@ -100,14 +107,16 @@ public class DependencyGraphBuilder {
         for (MethodCallExpr call : declaration.findAll(MethodCallExpr.class)) {
             MethodNode calleeNode =
                     new MethodNode("UNKNOWN", call.getNameAsString());
-            graph.addEdge(callerNode, calleeNode, call.getArguments().size());
+            graph.addEdge(callerNode, calleeNode, call.getArguments().size(),
+                    inferArgumentTypes(call.getArguments()));
         }
 
         for (ObjectCreationExpr creation : declaration.findAll(ObjectCreationExpr.class)) {
             MethodNode calleeNode = new MethodNode(
                     creation.getType().getNameAsString(),
                     MemberId.CONSTRUCTOR_NAME);
-            graph.addEdge(callerNode, calleeNode, creation.getArguments().size());
+            graph.addEdge(callerNode, calleeNode, creation.getArguments().size(),
+                    inferArgumentTypes(creation.getArguments()));
         }
 
         for (ExplicitConstructorInvocationStmt invocation
@@ -115,7 +124,62 @@ public class DependencyGraphBuilder {
             String calleeClass = invocation.isThis() ? enclosingClassName : "UNKNOWN";
             MethodNode calleeNode =
                     new MethodNode(calleeClass, MemberId.CONSTRUCTOR_NAME);
-            graph.addEdge(callerNode, calleeNode, invocation.getArguments().size());
+            graph.addEdge(callerNode, calleeNode, invocation.getArguments().size(),
+                    inferArgumentTypes(invocation.getArguments()));
         }
+    }
+
+    /**
+     * Infers a simple type name for every argument expression at a call site
+     * (M1). Only expressions whose type is syntactically unambiguous are
+     * inferred (literals, object creations, casts); anything else is
+     * {@link MemberId#UNKNOWN_TYPE} ("?"), which
+     * {@link MemberId#possiblyCompatible} always treats as compatible, so an
+     * incomplete inference can only over-select, never hide a change.
+     */
+    private static List<String> inferArgumentTypes(NodeList<Expression> arguments) {
+        List<String> types = new ArrayList<>();
+        for (Expression argument : arguments) {
+            types.add(inferArgumentType(argument));
+        }
+        return types;
+    }
+
+    private static String inferArgumentType(Expression expression) {
+        Expression expr = expression;
+        while (expr instanceof EnclosedExpr) {
+            expr = ((EnclosedExpr) expr).getInner();
+        }
+        if (expr.isStringLiteralExpr()) {
+            return "String";
+        }
+        if (expr.isIntegerLiteralExpr()) {
+            return "int";
+        }
+        if (expr.isLongLiteralExpr()) {
+            return "long";
+        }
+        if (expr.isDoubleLiteralExpr()) {
+            return "double";
+        }
+        if (expr.isCharLiteralExpr()) {
+            return "char";
+        }
+        if (expr.isBooleanLiteralExpr()) {
+            return "boolean";
+        }
+        if (expr.isObjectCreationExpr()) {
+            return MemberId.simpleTypeName(
+                    ((ObjectCreationExpr) expr).getType().getNameAsString());
+        }
+        if (expr.isCastExpr()) {
+            return MemberId.simpleTypeName(((CastExpr) expr).getType().asString());
+        }
+        if (expr.isUnaryExpr()) {
+            return inferArgumentType(((UnaryExpr) expr).getExpression());
+        }
+        // null (compatible with any reference type) and any expression whose
+        // type cannot be read syntactically stay unknown (conservative).
+        return MemberId.UNKNOWN_TYPE;
     }
 }

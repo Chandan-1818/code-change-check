@@ -76,8 +76,10 @@ public class MemberChangeDetector {
 
     private MemberId toMemberId(MethodInfo member) {
         if (MemberId.CONSTRUCTOR_NAME.equals(member.getName())) {
-            return MemberId.forConstructor(member.getClassName(), member.getArity());
+            return MemberId.forConstructor(
+                    member.getClassName(), member.getArity(), member.getParameterTypes());
         }
-        return MemberId.forMethod(member.getClassName(), member.getName(), member.getArity());
+        return MemberId.forMethod(
+                member.getClassName(), member.getName(), member.getArity(), member.getParameterTypes());
     }
 }
