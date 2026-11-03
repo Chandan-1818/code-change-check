@@ -1,0 +1,116 @@
+﻿Repository URL received: file:///D:/PROJECT/SAMPLE-PROJECT/sample-project
+Cloning into a dedicated temporary workspace...
+java : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3597
++ ... t@trae.ai'; java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar -- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Repository      : sample-project
+Default branch  : master
+Latest commit   : 7059f4c
+Previous commit : 3337a0b
+Base revision   : a3d0163
+Target revision : 268a165
+
+SECURITY WARNING
+Running Maven build scripts and tests from an external repository executes
+code from that repository on this machine. Only continue if you trust:
+  file:///D:/PROJECT/SAMPLE-PROJECT/sample-project
+
+Execution confirmed by --yes.
+
+
+Executing in an isolated checkout of 268a165 (this launches real Maven builds; the analysed repository is never modified)...
+Full suite      : 5 tests, 5 passed, 0 failed, 0 errored, 0 skipped, 8320 ms, build succeeded, compile ok
+Selected run    : 2 tests, 2 passed, 0 failed, 0 errored, 0 skipped, 5504 ms, build succeeded, compile ok
+Generated tests executed: 0 / 0 confirmed by Maven
+
+================================================================
+ CHANGE-SENSITIVE REGRESSION TESTING REPORT
+================================================================
+
+REPOSITORY INFORMATION
+
+Repository: sample-project
+Branch: master
+
+Base revision: a3d0163
+Target revision: 268a165
+
+PROJECT DISCOVERY
+
+Java project detected: YES
+Build system: Maven
+Project structure: Single module
+Test framework: JUnit 5
+Compatibility: SUPPORTED
+Maven wrapper: absent
+
+FILE CLASSIFICATION
+
+Total changed files: 1
+Java production files: 1
+Java test files: 0
+Build/configuration files: 0
+Other programming language files: 0
+Documentation files: 0
+Static assets: 0
+Binary/unknown files: 0
+
+CHANGE DETECTION
+
+Added files: 0
+Modified files: 1
+Deleted files: 0
+
+Changed classes: 1
+Changed methods: 1
+  - Multiplier#multiply
+
+DEPENDENCY AND IMPACT ANALYSIS
+
+Directly impacted methods: 1
+Transitively impacted methods: 0
+Unresolved dependencies: 1
+  - (direct) Calculator#compute
+
+REGRESSION TEST SELECTION
+
+Total existing tests: 5
+Selected tests: 2 (2 existing, 0 generated)
+Excluded tests: 3
+Test reduction: 60.0%
+Confidence: HIGH
+  - CalculatorTest#testCompute
+  - MultiplierTest#testMultiply
+
+AUTOMATIC TEST GENERATION
+
+Generated test classes: 0
+Generated test methods: 0
+Generation failures: 0
+
+TEST EXECUTION
+
+Existing selected tests executed: 2
+Generated tests executed: 0
+
+Passed: 2
+Failed: 0
+Errors: 0
+Skipped: 0
+Not confirmed: 0
+
+EXECUTION STATUS
+
+SUCCESS
+
+================================================================
+ FINAL RESULT
+================================================================
+
+Analysis completed for 1 changed file(s): 1 changed method(s) and 2 impacted method(s) were identified, and 2 of 5 existing test(s) were selected (60.0% reduction, confidence HIGH). The selected tests were executed in an isolated checkout and all of them passed; 0 generated test(s) were confirmed by Surefire.

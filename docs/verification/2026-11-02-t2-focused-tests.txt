@@ -1,0 +1,63 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< com.analysis.tool:CODE-CHANGE-ANALYSIS >---------------
+[INFO] Building CODE-CHANGE-ANALYSIS 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory D:\PROJECT\CODE-CHANGE-ANALYSIS\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 69 source files to D:\PROJECT\CODE-CHANGE-ANALYSIS\target\classes
+[INFO] /D:/PROJECT/CODE-CHANGE-ANALYSIS/src/main/java/com/analysis/tool/experiment/GeneratedSuiteRunner.java: Some input files use or override a deprecated API.
+[INFO] /D:/PROJECT/CODE-CHANGE-ANALYSIS/src/main/java/com/analysis/tool/experiment/GeneratedSuiteRunner.java: Recompile with -Xlint:deprecation for details.
+[INFO] /D:/PROJECT/CODE-CHANGE-ANALYSIS/src/main/java/com/analysis/tool/parser/JavaParserAnalyzer.java: D:\PROJECT\CODE-CHANGE-ANALYSIS\src\main\java\com\analysis\tool\parser\JavaParserAnalyzer.java uses unchecked or unsafe operations.
+[INFO] /D:/PROJECT/CODE-CHANGE-ANALYSIS/src/main/java/com/analysis/tool/parser/JavaParserAnalyzer.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory D:\PROJECT\CODE-CHANGE-ANALYSIS\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 86 source files to D:\PROJECT\CODE-CHANGE-ANALYSIS\target\test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ CODE-CHANGE-ANALYSIS ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.analysis.tool.cli.SelectTestsCliExecuteTest
+mvn : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3670
++ ... | Out-Null; mvn -B test "-Dtest=IsolatedRevisionCheckoutTest,TestRunn ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.40 s -- in com.analysis.tool.cli.SelectTestsCliExecuteTest
+[INFO] Running com.analysis.tool.execution.IsolatedRevisionCheckoutTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.605 s -- in com.analysis.tool.execution.IsolatedRevisionCheckoutTest
+[INFO] Running com.analysis.tool.execution.SurefireReportParserTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.analysis.tool.execution.SurefireReportParserTest
+[INFO] Running com.analysis.tool.execution.TestRunnerExecutionHardeningTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.647 s -- in com.analysis.tool.execution.TestRunnerExecutionHardeningTest
+[INFO] Running com.analysis.tool.execution.TestRunnerParseResultTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.analysis.tool.execution.TestRunnerParseResultTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  27.722 s
+[INFO] Finished at: 2026-11-02T16:38:26+05:30
+[INFO] ------------------------------------------------------------------------

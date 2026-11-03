@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ImpactAnalyzerTransitiveTestSelectionIntegrationTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
 
     private static final String CALCULATOR_PATH =
             "src/main/java/com/sample/Calculator.java";

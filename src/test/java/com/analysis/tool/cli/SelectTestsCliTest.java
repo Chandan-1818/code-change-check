@@ -1,14 +1,14 @@
 package com.analysis.tool.cli;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests SelectTestsCli.run directly (no separate JVM), capturing its
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SelectTestsCliTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
 
     private static final String CALCULATOR_PAIR =
             "src/main/java/com/sample/Calculator.java=src/test/java/com/sample/CalculatorTest.java";
@@ -86,11 +86,28 @@ public class SelectTestsCliTest {
 
     @Test
     public void shouldReturnExitCode2WhenRepositoryDoesNotExist() {
-        Result result = runCli("D:/PROJECT/this-repository-does-not-exist",
+        Result result = runCli(nonExistentRepoPath(),
                 VERSION_4_COMMIT, VERSION_5_COMMIT, CALCULATOR_PAIR);
 
         assertEquals(2, result.exitCode);
         assertTrue(result.err.contains("Analysis failed"),
                 "Expected an 'Analysis failed' message on the error stream");
+    }
+
+    /**
+     * A repository path that is guaranteed not to exist on any platform.
+     */
+    private static String nonExistentRepoPath() {
+        return Paths.get(System.getProperty("java.io.tmpdir"), "rts-repo-does-not-exist").toString();
+    }
+
+    @Test
+    public void shouldPrintHighConfidenceForAPreciseSelection() {
+        Result result = runCli(SAMPLE_PROJECT_PATH, VERSION_4_COMMIT, VERSION_5_COMMIT,
+                CALCULATOR_PAIR, MULTIPLIER_PAIR);
+
+        assertEquals(0, result.exitCode, "Unexpected error output: " + result.err);
+        assertTrue(result.out.contains("Confidence     : HIGH"),
+                "Expected a HIGH confidence line; output was: " + result.out);
     }
 }

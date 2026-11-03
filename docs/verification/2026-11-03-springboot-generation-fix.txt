@@ -1,0 +1,113 @@
+Spring Boot dependency resolution in automatic test generation - verification evidence
+Date: 2026-11-03
+Branch: feature/complete-live-demo
+Base commit of the tool: 5e3d978 (unchanged; no commit made for this fix)
+
+===============================================================================
+1. Regression suite of the tool itself
+===============================================================================
+Command: mvn -B test
+Result : Tests run: 407, Failures: 0, Errors: 0, Skipped: 0 - BUILD SUCCESS
+(403 tests before this change; 4 new tests added)
+
+Focused evidence from the same run:
+[INFO] Tests run: 2, Failures: 0, Errors: 0 - com.analysis.tool.execution.MavenClasspathResolverTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0 - com.analysis.tool.testgen.OracleCaptureClasspathTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0 - com.analysis.tool.cli.GenerateTestsCliRealHistoryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0 - com.analysis.tool.cli.GenerateTestsCliTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0 - com.analysis.tool.experiment.GeneratedSuiteRunnerIntegrationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0 - com.analysis.tool.experiment.NoExistingTestsProofTest
+
+===============================================================================
+2. External Spring Boot repository (scenario 2) - full remote workflow
+===============================================================================
+Command: java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+           --url=https://github.com/jaygajera17/E-commerce-project-springBoot.git
+           --generate --execute --yes --out=<temp>
+
+Repository        : E-commerce-project-springBoot
+Base revision     : 64bd138
+Target revision   : 5e74a46
+
+Generated test classes: 6
+Generated test methods: 20
+Generation failures   : 103 (methods the generator does not support; reasons in the manifest)
+
+Total existing tests: 7
+Selected tests      : 26 (6 existing, 20 generated)
+Excluded tests      : 1
+Test reduction      : 14.3%
+Confidence          : REDUCED
+
+Full suite     : 27 tests, 26 passed, 0 failed, 1 errored, 0 skipped, 12639 ms, build FAILED, compile ok
+Selected run   : 26 tests, 26 passed, 0 failed, 0 errored, 0 skipped, 5671 ms, build succeeded, compile ok
+
+Generated tests executed: 20 / 20 confirmed by Maven
+Passed: 26  Failed: 0  Errors: 0  Skipped: 0  Not confirmed: 0
+
+Every generated test is individually confirmed by Maven Surefire, e.g.
+  CartGeneratedTest#gen_Cart_getId_01 : EXECUTED (confirmed by Maven Surefire)
+  ProductGeneratedTest#gen_Product_getName_01 : EXECUTED (confirmed by Maven Surefire)
+  UserGeneratedTest#gen_User_getUsername_01 : EXECUTED (confirmed by Maven Surefire)
+  (all 20 listed in the run output)
+
+Preserved Surefire evidence: %TEMP%\rts-execution-logs-*/maven-execution.log
+  [INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0 - in rts.generated.ProductGeneratedTest
+  [INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] BUILD SUCCESS
+
+Baseline (the 1 error of the full suite is pre-existing in the repository and
+unrelated to the fix; verified with a plain `mvn -B test` in a checkout of
+5e74a46 without any generated tests):
+  [ERROR] Tests run: 1, Failures: 0, Errors: 1 - in com.jtspringproject.JtSpringProject.JtSpringProjectApplicationTests
+  [ERROR]   JtSpringProjectApplicationTests.contextLoads   IllegalState Failed to load ApplicationContext
+  [INFO]  Tests run: 7, Failures: 0, Errors: 1, Skipped: 0
+  [INFO]  BUILD FAILURE
+
+===============================================================================
+3. Scenario 3 - unresolved dependencies give a precise diagnostic
+===============================================================================
+Temporary git repository with a pom.xml declaring a non-existent artifact.
+Command: java -cp target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar
+           com.analysis.tool.cli.GenerateTestsCli <repo> <rev> --project=broken
+Exit code: 2
+
+stderr:
+  Generation failed: Maven could not resolve the dependency classpath of the target project at
+  revision 8b31dbe2364b16cc575be7f4878fa2ffb865fe04 (C:\Users\...\rts-broken-deps), so the target
+  sources cannot be compiled and automatic test generation is not possible. Maven exit code: 1.
+  Maven output (last lines):
+    ... Could not find artifact com.example.this.artifact.does.not.exist:nowhere:jar:1.0 in central
+
+No misleading "package ... does not exist" error is produced.
+
+===============================================================================
+4. Scenario 1 - plain Java Maven/JUnit project still works
+===============================================================================
+Covered by the unchanged-generation path: the sample project (JUnit 5 only)
+generates and runs its suite in GenerateTestsCliRealHistoryTest (24.17 s, PASS)
+and GeneratedSuiteRunnerIntegrationTest / NoExistingTestsProofTest (PASS).
+The resolved classpath of the sample project contains only its JUnit 5 jars.
+
+Scenario 4 (project with no existing tests) is covered by
+NoExistingTestsProofTest (PASS).
+
+===============================================================================
+5. Root cause and fix (summary)
+===============================================================================
+Root cause: OracleCapture compiled the target's production sources with
+"-classpath" set to the tool's own runtime only, and started the capture JVM
+with "-cp <classes>;<tool runtime>". The analysed repository's Maven
+dependencies were never resolved, so any source referencing a third-party
+package (org.springframework.*, org.springframework.orm.hibernate5, ...) failed
+with "package ... does not exist" and the generator produced 0 tests. Plain
+JDK-only projects were unaffected, which hid the defect.
+
+Fix: MavenClasspathResolver resolves the target revision's compile classpath by
+running `mvn dependency:build-classpath` inside an isolated checkout of that
+revision (uses the project's own POM, BOM/dependency management and transitive
+resolution; nothing hardcoded, nothing downloaded through any external
+service). The resolved classpath is threaded through TestGenerator /
+IncrementalGenerator into OracleCapture, which adds it to both the javac
+-classpath and the capture JVM's -cp. Failure to resolve raises an exception
+whose message is Maven's own diagnostic.

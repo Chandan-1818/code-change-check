@@ -1,0 +1,125 @@
+﻿java : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3507
++ ... StartNew(); java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar -- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Repository     : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Compared       : a3d0163 -> 268a165
+File pairs     : 3 (auto-discovered)
+Generation     : 48 generated test method(s) from 3 production file(s), written to generated-tests\sample-project\268a165
+Confidence     : HIGH
+Max depth      : unlimited
+Git diff       : 1 file(s) changed between a3d0163 and 268a165 (0 added, 1 modified, 0 deleted)
+  M src/main/java/com/sample/Multiplier.java
+Changed members (1):
+  - Multiplier#multiply
+Impacted methods (2):
+  - Calculator#compute
+  - UNKNOWN#multiply
+Selected tests (26):
+  - CalculatorGeneratedTest#gen_Calculator_compute_01 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_02 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_03 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_04 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_05 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_06 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_07 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_08 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_09 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_10 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_11 [generated]
+  - CalculatorGeneratedTest#gen_Calculator_compute_12 [generated]
+  - CalculatorTest#testCompute
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_01 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_02 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_03 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_04 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_05 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_06 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_07 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_08 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_09 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_10 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_11 [generated]
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_12 [generated]
+  - MultiplierTest#testMultiply
+Selection reasons:
+  - CalculatorGeneratedTest#gen_Calculator_compute_01 -> CalculatorGeneratedTest#gen_Calculator_compute_01 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_02 -> CalculatorGeneratedTest#gen_Calculator_compute_02 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_03 -> CalculatorGeneratedTest#gen_Calculator_compute_03 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_04 -> CalculatorGeneratedTest#gen_Calculator_compute_04 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_05 -> CalculatorGeneratedTest#gen_Calculator_compute_05 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_06 -> CalculatorGeneratedTest#gen_Calculator_compute_06 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_07 -> CalculatorGeneratedTest#gen_Calculator_compute_07 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_08 -> CalculatorGeneratedTest#gen_Calculator_compute_08 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_09 -> CalculatorGeneratedTest#gen_Calculator_compute_09 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_10 -> CalculatorGeneratedTest#gen_Calculator_compute_10 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_11 -> CalculatorGeneratedTest#gen_Calculator_compute_11 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorGeneratedTest#gen_Calculator_compute_12 -> CalculatorGeneratedTest#gen_Calculator_compute_12 -> Calculator#compute -> Multiplier#multiply
+  - CalculatorTest#testCompute -> CalculatorTest#testCompute -> Calculator#compute -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_01 -> MultiplierGeneratedTest#gen_Multiplier_multiply_01 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_02 -> MultiplierGeneratedTest#gen_Multiplier_multiply_02 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_03 -> MultiplierGeneratedTest#gen_Multiplier_multiply_03 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_04 -> MultiplierGeneratedTest#gen_Multiplier_multiply_04 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_05 -> MultiplierGeneratedTest#gen_Multiplier_multiply_05 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_06 -> MultiplierGeneratedTest#gen_Multiplier_multiply_06 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_07 -> MultiplierGeneratedTest#gen_Multiplier_multiply_07 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_08 -> MultiplierGeneratedTest#gen_Multiplier_multiply_08 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_09 -> MultiplierGeneratedTest#gen_Multiplier_multiply_09 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_10 -> MultiplierGeneratedTest#gen_Multiplier_multiply_10 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_11 -> MultiplierGeneratedTest#gen_Multiplier_multiply_11 -> Multiplier#multiply
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_12 -> MultiplierGeneratedTest#gen_Multiplier_multiply_12 -> Multiplier#multiply
+  - MultiplierTest#testMultiply -> MultiplierTest#testMultiply -> Multiplier#multiply
+
+Executing in an isolated checkout of 268a165 (this launches real Maven builds)...
+Included 2 generated test file(s) in the isolated checkout (original repository untouched).
+Target revision : 268a165
+Selected tests  : 26 selected
+Full suite      : 53 tests, 53 passed, 0 failed, 0 errored, 0 skipped, 3472 ms, build succeeded, compile ok
+Selected run    : 26 tests, 26 passed, 0 failed, 0 errored, 0 skipped, 2928 ms, build succeeded, compile ok
+Timed out       : no
+Test reduction  : 50.9%
+Time reduction  : 15.7% (informational - unreliable on small suites due to Maven/JVM startup overhead)
+Generated tests selected for execution (24):
+  - CalculatorGeneratedTest#gen_Calculator_compute_01 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_02 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_03 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_04 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_05 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_06 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_07 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_08 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_09 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_10 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_11 : EXECUTED (confirmed by Maven Surefire)
+  - CalculatorGeneratedTest#gen_Calculator_compute_12 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_01 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_02 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_03 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_04 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_05 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_06 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_07 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_08 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_09 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_10 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_11 : EXECUTED (confirmed by Maven Surefire)
+  - MultiplierGeneratedTest#gen_Multiplier_multiply_12 : EXECUTED (confirmed by Maven Surefire)
+Generated tests executed: 24 / 24 confirmed by Maven
+
+================================================================================
+ Final report
+================================================================================
+Repository       : D:/PROJECT/SAMPLE-PROJECT/sample-project
+Revisions        : a3d0163 -> 268a165
+Git diff         : 1 file(s) changed (0 added, 1 modified, 0 deleted)
+Changed members  : 1
+Impacted methods : 2
+Selected tests   : 26 (2 existing, 24 generated)
+Untested methods : 0
+Confidence       : HIGH
+Execution        : ran successfully (24/24 generated confirmed)

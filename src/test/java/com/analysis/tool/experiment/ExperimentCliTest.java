@@ -1,16 +1,16 @@
 package com.analysis.tool.experiment;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests ExperimentCli.run directly (no separate JVM), checking each
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ExperimentCliTest {
 
     private static final String SAMPLE_PROJECT_PATH =
-            "D:/PROJECT/SAMPLE-PROJECT/sample-project";
+            com.analysis.tool.testsupport.SamplePaths.SAMPLE_PROJECT_PATH;
 
     private static final String[] REVISIONS = {
             "f2493c2", "9ed64fa", "7584402", "a3d0163",
@@ -96,7 +96,9 @@ public class ExperimentCliTest {
 
     @Test
     public void shouldReturnExitCode2WhenRepositoryDoesNotExist() {
-        Result result = runCli("D:/PROJECT/this-repository-does-not-exist", "a3d0163", "268a165");
+        String missingRepo = Paths.get(System.getProperty("java.io.tmpdir"),
+                "rts-repo-does-not-exist").toString();
+        Result result = runCli(missingRepo, "a3d0163", "268a165");
 
         assertEquals(2, result.exitCode);
         assertTrue(result.err.contains("Experiment failed"),

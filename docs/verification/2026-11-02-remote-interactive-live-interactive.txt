@@ -1,0 +1,132 @@
+﻿================================================================
+ CHANGE-SENSITIVE REGRESSION TEST SELECTION SYSTEM
+================================================================
+
+Enter Git repository URL (or 'exit' to quit): Repository URL received.
+Cloning into a dedicated temporary workspace...
+java : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3665
++ ... ,"2","6") | java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar -- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+
+Repository      : sample-project
+URL             : file:///D:/PROJECT/SAMPLE-PROJECT/sample-project
+Default branch  : master
+Latest commit   : 7059f4c
+Previous commit : 3337a0b
+
+Select comparison:
+  1. Automatically compare the latest two commits.
+  2. Enter custom base and target commits.
+Select [1-2] (default 1): Comparing the latest two commits: 3337a0b -> 7059f4c
+
+Operations:
+  1. Analyze repository changes
+  2. Analyze and select regression tests
+  3. Generate automatic JUnit tests
+  4. Analyze, generate and execute tests
+  5. Full regression testing workflow
+  6. Exit
+Select an operation [1-6]: 
+================================================================
+ CHANGE-SENSITIVE REGRESSION TESTING REPORT
+================================================================
+
+REPOSITORY INFORMATION
+
+Repository: sample-project
+Branch: master
+
+Base revision: 3337a0b
+Target revision: 7059f4c
+
+PROJECT DISCOVERY
+
+Java project detected: YES
+Build system: Maven
+Project structure: Single module
+Test framework: JUnit 5
+Compatibility: SUPPORTED
+Maven wrapper: absent
+
+FILE CLASSIFICATION
+
+Total changed files: 2
+Java production files: 1
+Java test files: 1
+Build/configuration files: 0
+Other programming language files: 0
+Documentation files: 0
+Static assets: 0
+Binary/unknown files: 0
+
+CHANGE DETECTION
+
+Added files: 0
+Modified files: 2
+Deleted files: 0
+
+Changed classes: 0
+Changed methods: 0
+
+DEPENDENCY AND IMPACT ANALYSIS
+
+Directly impacted methods: 0
+Transitively impacted methods: 0
+Unresolved dependencies: 0
+
+REGRESSION TEST SELECTION
+
+Total existing tests: 17
+Selected tests: 0 (0 existing, 0 generated)
+Excluded tests: 17
+Test reduction: 100.0%
+Confidence: HIGH
+
+Removed methods (1):
+  - compute
+
+AUTOMATIC TEST GENERATION
+
+Generated test classes: 0
+Generated test methods: 0
+Generation failures: 0
+
+TEST EXECUTION
+
+Existing selected tests executed: 0
+Generated tests executed: 0
+
+Passed: 0
+Failed: 0
+Errors: 0
+Skipped: 0
+Not confirmed: 0
+
+EXECUTION STATUS
+
+NOT RUN
+
+NOTE: Test execution was not requested.
+
+================================================================
+ FINAL RESULT
+================================================================
+
+Analysis completed for 2 changed file(s): 0 changed method(s) and 0 impacted method(s) were identified, and 0 of 17 existing test(s) were selected (100.0% reduction, confidence HIGH). Test execution was not requested.
+
+Returning to the operations menu.
+
+Operations:
+  1. Analyze repository changes
+  2. Analyze and select regression tests
+  3. Generate automatic JUnit tests
+  4. Analyze, generate and execute tests
+  5. Full regression testing workflow
+  6. Exit
+Select an operation [1-6]: Exiting. Goodbye.

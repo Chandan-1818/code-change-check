@@ -1,0 +1,283 @@
+﻿Repository URL received: https://github.com/Chandan-1818/code-change-check.git
+Cloning into a dedicated temporary workspace...
+java : SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+At line:15 char:3597
++ ... t@trae.ai'; java -jar target\CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar -- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SLF4J: Failed t...cLoggerBinder".:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Repository      : code-change-check
+Default branch  : master
+Latest commit   : 4f393be
+Previous commit : 57ae6f2
+Base revision   : 57ae6f2
+Target revision : 4f393be
+
+
+================================================================
+ CHANGE-SENSITIVE REGRESSION TESTING REPORT
+================================================================
+
+REPOSITORY INFORMATION
+
+Repository: code-change-check
+Branch: master
+
+Base revision: 57ae6f2
+Target revision: 4f393be
+
+PROJECT DISCOVERY
+
+Java project detected: YES
+Build system: Maven
+Project structure: Single module
+Test framework: JUnit 5
+Compatibility: REDUCED (1 reason(s))
+Maven wrapper: absent
+  - reduced confidence: reflection indicators present (src/main/java/com/analysis/tool/experiment/FaultInjectionRunner.java) - dynamic dispatch cannot be resolved statically
+
+FILE CLASSIFICATION
+
+Total changed files: 9
+Java production files: 6
+Java test files: 3
+Build/configuration files: 0
+Other programming language files: 0
+Documentation files: 0
+Static assets: 0
+Binary/unknown files: 0
+
+CHANGE DETECTION
+
+Added files: 4
+Modified files: 5
+Deleted files: 0
+
+Changed classes: 6
+Changed methods: 21
+  - ChangeImpactAnalyzer#analyzeTransitively
+  - JavaParserAnalyzer#extractMethodNames
+  - JavaParserAnalyzer#extractMethods
+  - JavaParserAnalyzer#parseWithoutComments
+  - MethodChangeDetector#detectChanges
+  - MethodChangeDetector#toFingerprintMap
+  - MethodInfo#<init>
+  - MethodInfo#equals
+  - MethodInfo#getBodyText
+  - MethodInfo#getDeclaration
+  - MethodInfo#getName
+  - MethodInfo#hashCode
+  - MethodInfo#toString
+  - NonMethodChangeDetector#fingerprints
+  - NonMethodChangeDetector#hasNonMethodChange
+  - TestSelectionReport#<init>
+  - TestSelectionReport#getConservativelyExpandedFiles
+  - TestSelectionReport#getRemovedMethods
+  - TestSelectionReport#getSelectedTestIdentifiers
+  - TestSelectionReport#getSelectedTests
+  - TestSelectionReport#getUntestedChangedMethods
+
+DEPENDENCY AND IMPACT ANALYSIS
+
+Directly impacted methods: 42
+Transitively impacted methods: 29
+Unresolved dependencies: 9
+  - (direct) ChangeImpactAnalyzer#analyzeTransitively
+  - (direct) ChangeImpactAnalyzer#findImpactedTestsForFile
+  - (direct) ChangeImpactAnalyzer#findImpactedTestsTransitively
+  - (direct) ChangeImpactAnalyzerDeletedFileIntegrationTest#commit
+  - (direct) ChangeImpactAnalyzerNonMethodChangeTest#analyze
+  - (direct) ChangeImpactAnalyzerNonMethodChangeTest#commit
+  - (direct) ChangeImpactAnalyzerOrderIntegrationTest#analyze
+  - (direct) ChangeImpactAnalyzerReportIntegrationTest#analyze
+  - (direct) DependencyGraph#getCallersByMethodName
+  - (direct) ExperimentCli#run
+  - (direct) ExperimentCliExecuteTest#runCli
+  - (direct) ExperimentCliTest#runCli
+  - (direct) ExperimentExecutor#run
+  - (direct) ExperimentExecutor#toMarkdown
+  - (direct) ExperimentRunner#run
+  - (direct) ExperimentRunner#toCsv
+  - (direct) ExperimentRunner#toMarkdown
+  - (direct) FaultInjectionRunner#main
+  - (direct) FaultInjectionRunner#readFailingTests
+  - (direct) FaultInjectionRunner#run
+  - (direct) FaultInjectionRunner#toMarkdown
+  - (direct) FileMapping#equals
+  - (direct) FileMappingDiscovererTest#describe
+  - (direct) JavaParserAnalyzer#extractMethodNames
+  - (direct) JavaParserAnalyzer#extractMethods
+  - (direct) JavaParserAnalyzerTest#findMethodByName
+  - (direct) MethodChangeDetector#detectChanges
+  - (direct) MethodChangeDetector#toFingerprintMap
+  - (direct) MethodChangeDetectorSafetyTest#detect
+  - (direct) MethodNode#equals
+  - (direct) NonMethodChangeDetector#fingerprints
+  - (direct) NonMethodChangeDetector#hasNonMethodChange
+  - (direct) PinnedSampleCheckout#cloneAt
+  - (direct) SelectTestsCli#run
+  - (direct) SelectTestsCliAutoDiscoverTempRepoTest#commit
+  - (direct) SelectTestsCliAutoDiscoverTempRepoTest#runCli
+  - (direct) SelectTestsCliAutoDiscoverTest#runCli
+  - (direct) SelectTestsCliRemovedTest#commit
+  - (direct) SelectTestsCliTest#runCli
+  - (direct) SelectTestsCliWarningTest#runCli
+  - (direct) TestImpactMapper#findTestsExercisingMethod
+  - (direct) TestRunner#runMaven
+  - (transitive) ChangeImpactAnalyzer#analyzeTransitively
+  - (transitive) ChangeImpactAnalyzer#findImpactedTests
+  - (transitive) ChangeImpactAnalyzer#findImpactedTestsForFile
+  - (transitive) ChangeImpactAnalyzer#findImpactedTestsTransitively
+  - (transitive) ChangeImpactAnalyzerNonMethodChangeTest#analyze
+  - (transitive) ChangeImpactAnalyzerOrderIntegrationTest#analyze
+  - (transitive) ChangeImpactAnalyzerReportIntegrationTest#analyze
+  - (transitive) ExperimentCli#main
+  - (transitive) ExperimentCli#run
+  - (transitive) ExperimentCliExecuteTest#runCli
+  - (transitive) ExperimentCliTest#runCli
+  - (transitive) ExperimentExecutor#run
+  - (transitive) ExperimentRunner#run
+  - (transitive) ExperimentRunnerTest#run
+  - (transitive) FaultInjectionRunner#main
+  - (transitive) FaultInjectionRunner#run
+  - (transitive) ImpactAnalyzer#analyzeImpact
+  - (transitive) LargerSampleHistoryTest#run
+  - (transitive) MethodChangeDetector#detectChanges
+  - (transitive) MethodChangeDetectorSafetyTest#detect
+  - (transitive) NonMethodChangeDetector#hasNonMethodChange
+  - (transitive) SelectTestsCli#main
+  - (transitive) SelectTestsCli#run
+  - (transitive) SelectTestsCliAutoDiscoverTempRepoTest#runCli
+  - (transitive) SelectTestsCliAutoDiscoverTest#runCli
+  - (transitive) SelectTestsCliTest#runCli
+  - (transitive) SelectTestsCliWarningTest#runCli
+  - (transitive) TestRunner#runFullSuite
+  - (transitive) TestRunner#runSelectedTests
+
+REGRESSION TEST SELECTION
+
+Total existing tests: 89
+Selected tests: 82 (82 existing, 0 generated)
+Excluded tests: 7
+Test reduction: 7.9%
+Confidence: REDUCED
+  - ChangeImpactAnalyzerDeletedFileIntegrationTest#deletedSourceFile_doesNotThrow
+  - ChangeImpactAnalyzerDeletedFileIntegrationTest#deletedTestFile_doesNotThrow_andChangedMethodIsReportedUntested
+  - ChangeImpactAnalyzerDeletedFileIntegrationTest#removedMethod_isReported_andDoesNotAffectSelection
+  - ChangeImpactAnalyzerIdentifierIntegrationTest#shouldReturnClassQualifiedIdentifiersForSelectedTests
+  - ChangeImpactAnalyzerIntegrationTest#shouldSelectNoTestsWhenComparingRevisionToItself
+  - ChangeImpactAnalyzerIntegrationTest#shouldSelectOnlyTestMultiplyWhenOnlyMultiplierIsAddedAcrossMultipleFiles
+  - ChangeImpactAnalyzerIntegrationTest#shouldSelectOnlyTestSubtractForRealCommitRange
+  - ChangeImpactAnalyzerNonMethodChangeTest#commentOnlyChangeSelectsNothing
+  - ChangeImpactAnalyzerNonMethodChangeTest#constantChangeSelectsTestsOfMethodsInTheFile
+  - ChangeImpactAnalyzerOrderIntegrationTest#shouldSelectBothOrderTestsWhenOrderClassesAreNewlyAdded
+  - ChangeImpactAnalyzerOrderIntegrationTest#shouldSelectDirectAndTransitiveOrderTestsWhenOnlySaveIsModified
+  - ChangeImpactAnalyzerOrderIntegrationTest#shouldSelectNothingWhenComparingRevisionToItself
+  - ChangeImpactAnalyzerReportIntegrationTest#shouldReportCoveredAndUncoveredChangesTogether
+  - ChangeImpactAnalyzerReportIntegrationTest#shouldReportNegateAsUntestedAndSelectNoTestsWhenOnlyNegateIsAdded
+  - ChangeImpactAnalyzerReportIntegrationTest#shouldReportNothingUntestedWhenEveryChangedMethodIsCovered
+  - ChangeImpactAnalyzerReportIntegrationTest#shouldReportNothingWhenComparingRevisionToItself
+  - ChangeImpactAnalyzerTransitiveIntegrationTest#shouldSelectDirectAndTransitiveTestsWhenOnlyMultiplyIsModified
+  - ChangeImpactAnalyzerTransitiveIntegrationTest#shouldSelectNothingWhenComparingRevisionToItself
+  - ChangeImpactAnalyzerTransitiveIntegrationTest#shouldSelectOnlyTestComputeWhenComputeIsAdded
+  - EvaluationMetricsIntegrationTest#shouldComputeTestReductionForRealV4ToV5Selection
+  - ExperimentCliExecuteTest#shouldPrintExecutedTableWithReductionAtEachRevision
+  - ExperimentCliExecuteTest#shouldRejectCsvTogetherWithExecute
+  - ExperimentCliTest#shouldPrintMarkdownTableForSampleHistory
+  - ExperimentCliTest#shouldReturnExitCode1AndUsageWhenFewerThanTwoRevisions
+  - ExperimentCliTest#shouldReturnExitCode2WhenRepositoryDoesNotExist
+  - ExperimentCliTest#shouldWriteCsvFileWhenRequested
+  - ExperimentExecutorTest#shouldRenderExecutedAndSkippedRowsAsMarkdown
+  - ExperimentExecutorTest#shouldRunSuitesAtEachRevisionAndSkipEmptySelections
+  - ExperimentRunnerTest#shouldMatchSelectionsProvenElsewhereForKnownRanges
+  - ExperimentRunnerTest#shouldProduceOneRowPerConsecutiveRevisionPair
+  - ExperimentRunnerTest#shouldRenderMarkdownAndCsv
+  - FaultInjectionGrownSampleTest#shouldSelectEveryFailingTestForEachInjectedFault
+  - FaultInjectionRunnerTest#shouldRenderTableAndSummaryFromSyntheticResults
+  - FaultInjectionRunnerTest#shouldSelectEveryFailingTestForEachInjectedFault
+  - FileMappingDiscovererTest#shouldIgnoreTestFilesBuildFilesAndNonJavaSources
+  - FileMappingDiscovererTest#shouldPairSourceWithConventionalTestPath
+  - GitAnalyzerListFilesTest#shouldListAllFilesPresentAtRevision
+  - GitAnalyzerTest#shouldReadDifferentFileContentAtDifferentRevisions
+  - ImpactAnalyzerIntegrationTest#shouldIdentifyComputeAsDirectlyImpactedWhenMultiplyChanges
+  - ImpactAnalyzerTransitiveTestSelectionIntegrationTest#shouldIdentifyTestComputeAsImpactedWhenMultiplyChangesViaTransitiveChain
+  - JavaParserAnalyzerTest#shouldDetectDifferentBodyTextForModifiedMethod
+  - JavaParserAnalyzerTest#shouldDetectSameBodyTextForUnchangedMethod
+  - JavaParserAnalyzerTest#shouldExtractMethodNamesFromCalculator
+  - LargerSampleHistoryTest#shouldRenderTheModifiedMethodRowInMarkdown
+  - LargerSampleHistoryTest#shouldSelectExpectedTestsAndReportUntestedAndRemovedMethods
+  - MethodChangeDetectorIntegrationTest#shouldDetectSubtractModifiedAndAddUnchangedAcrossRealCommits
+  - MethodChangeDetectorSafetyTest#changeToOneOverloadIsNotHiddenByTheOther
+  - MethodChangeDetectorSafetyTest#commentAndWhitespaceOnlyChangeIsNotAChange
+  - MethodChangeDetectorSafetyTest#reorderingOverloadsIsNotAChange
+  - MethodChangeDetectorSafetyTest#signatureOnlyChangeIsDetected
+  - NonMethodChangeDetectorTest#addedFieldIsNotFlagged
+  - NonMethodChangeDetectorTest#addedImportIsNotFlagged
+  - NonMethodChangeDetectorTest#addedOrDeletedFileIsNotFlagged
+  - NonMethodChangeDetectorTest#addedOrRemovedMethodIsNotFlagged
+  - NonMethodChangeDetectorTest#changedConstantIsFlagged
+  - NonMethodChangeDetectorTest#classAnnotationAddedIsFlagged
+  - NonMethodChangeDetectorTest#commentOnlyChangeIsNotFlagged
+  - NonMethodChangeDetectorTest#constructorBodyChangeIsFlagged
+  - NonMethodChangeDetectorTest#methodBodyOnlyChangeIsNotFlagged
+  - NonMethodChangeDetectorTest#removedFieldIsFlagged
+  - NonMethodChangeDetectorTest#removedImportIsFlagged
+  - SelectTestsCliAutoDiscoverTempRepoTest#sourceAddedAtNewRevision_isDiscoveredAndItsMethodReportedUntested
+  - SelectTestsCliAutoDiscoverTempRepoTest#sourceDeletedAtNewRevision_isStillDiscoveredAndItsMethodReportedRemoved
+  - SelectTestsCliAutoDiscoverTest#shouldAutoDiscoverOrderChainForV7ToV8
+  - SelectTestsCliAutoDiscoverTest#shouldAutoDiscoverPairsAndSelectTransitiveTestsForV4ToV5
+  - SelectTestsCliAutoDiscoverTest#shouldNotAutoDiscoverWhenExplicitPairsAreGiven
+  - SelectTestsCliAutoDiscoverTest#shouldStillReportUntestedMethodWhenPairsAreAutoDiscovered
+  - SelectTestsCliExecuteTest#shouldExecuteAndReportTestReduction
+  - SelectTestsCliExecuteTest#shouldSkipExecutionWhenNoTestsAreSelected
+  - SelectTestsCliRemovedTest#shouldListRemovedMethodWithoutWarningOrSelection
+  - SelectTestsCliTest#shouldReturnExitCode0AndListSelectedTestsForRealCommitRange
+  - SelectTestsCliTest#shouldReturnExitCode1AndUsageWhenTooFewArguments
+  - SelectTestsCliTest#shouldReturnExitCode1WhenFilePairIsMalformed
+  - SelectTestsCliTest#shouldReturnExitCode2WhenRepositoryDoesNotExist
+  - SelectTestsCliWarningTest#shouldNotWarnWhenEveryChangedMethodIsCovered
+  - SelectTestsCliWarningTest#shouldReportNoImpactedTestsAndNoWarningWhenNothingChanged
+  - SelectTestsCliWarningTest#shouldWarnAboutNegateAndNotClaimNothingWasImpacted
+  - TestImpactMapperGapIntegrationTest#shouldFailToFindTestComputeAsExercisingMultiplyDueToMissingTransitiveReasoning
+  - TestImpactMapperIntegrationTest#shouldMapAddToTestAddOnly
+  - TestImpactMapperIntegrationTest#shouldMapSubtractToTestSubtractOnly
+  - TestRunnerIntegrationTest#shouldRunAllSevenTestsInTheFullSuite
+  - TestRunnerIntegrationTest#shouldRunOnlyTheSelectedTests
+
+WARNING - changed methods not reached by any test (1):
+  - hashCode
+
+Removed methods (1):
+  - toBodyMap
+
+AUTOMATIC TEST GENERATION
+
+Generated test classes: 0
+Generated test methods: 0
+Generation failures: 0
+
+TEST EXECUTION
+
+Existing selected tests executed: 0
+Generated tests executed: 0
+
+Passed: 0
+Failed: 0
+Errors: 0
+Skipped: 0
+Not confirmed: 0
+
+EXECUTION STATUS
+
+NOT RUN
+
+NOTE: Test execution was not requested.
+
+================================================================
+ FINAL RESULT
+================================================================
+
+Analysis completed for 9 changed file(s): 21 changed method(s) and 64 impacted method(s) were identified, and 82 of 89 existing test(s) were selected (7.9% reduction, confidence REDUCED). Test execution was not requested.

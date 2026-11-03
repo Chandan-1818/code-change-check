@@ -1,0 +1,30 @@
+Command : mvn -B test -Dtest=<the 7 slow classes>
+Date    : 2026-10-26
+Commit  : b0aa554
+Uncommitted files at run time:
+?? docs/verification/
+--- output tail follows ---
+mvn exit code: 0
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.76 s -- in com.analysis.tool.cli.SelectTestsCliExecuteTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.82 s -- in com.analysis.tool.execution.TestRunnerIntegrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.03 s -- in com.analysis.tool.experiment.ExperimentCliExecuteTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.63 s -- in com.analysis.tool.experiment.ExperimentExecutorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 108.6 s -- in com.analysis.tool.experiment.FaultInjectionGrownSampleTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 54.87 s -- in com.analysis.tool.experiment.FaultInjectionRunnerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.16 s -- in com.analysis.tool.metrics.EvaluationMetricsIntegrationTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 54.87 s -- in com.analysis.tool.experiment.FaultInjectionRunnerTest
+[INFO] Running com.analysis.tool.metrics.EvaluationMetricsIntegrationTest
+Observed time reduction (informational only, not asserted): 31.785490931832395% -- full=6396ms, selected=4363ms
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.16 s -- in com.analysis.tool.metrics.EvaluationMetricsIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  03:42 min
+[INFO] Finished at: 2026-10-26T16:59:00+05:30
+[INFO] ------------------------------------------------------------------------

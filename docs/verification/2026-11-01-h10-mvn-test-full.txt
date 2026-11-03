@@ -1,0 +1,22 @@
+H10 verification evidence — full Maven test suite
+Project  : CODE-CHANGE-ANALYSIS (com.analysis.tool:CODE-CHANGE-ANALYSIS:1.0-SNAPSHOT)
+Date     : 2026-11-01T19:16:03+05:30
+Branch   : safety-fixes-v3 (HEAD 42f0966)
+Command  : mvn -B -o test
+JDK      : openjdk 23.0.2 (BellSoft Liberica), Maven 3.9.16, compiler target 17
+Result   : Tests run: 334, Failures: 0, Errors: 0, Skipped: 0
+           BUILD SUCCESS (total time 06:23 min)
+Prior    : H9 baseline 294 tests. H10 adds 40 tests (eval package unit tests +
+           GroundTruthEvaluationIntegrationTest), bringing the total to 334.
+Raw log  : docs/verification/2026-11-01-mvn-test-h10.txt (full Maven output captured separately)
+--------------------------------------------------------------------------------
+Test classes run (H10-specific):
+  com.analysis.tool.eval.EvaluationReportTest              8 tests   0.026 s
+  com.analysis.tool.eval.GroundTruthCaseTest               6 tests   0.016 s
+  com.analysis.tool.eval.GroundTruthDatasetTest            9 tests   0.025 s
+  com.analysis.tool.eval.GroundTruthEvaluatorTest          7 tests   0.017 s
+  com.analysis.tool.eval.PrecisionRecallTest               8 tests   0.012 s
+  com.analysis.tool.experiment.GroundTruthEvaluationIntegrationTest
+                                                           2 tests  24.50  s
+
+All 334 tests: 0 failures, 0 errors, 0 skipped — BUILD SUCCESS.

@@ -1,0 +1,63 @@
+﻿Change-Sensitive Regression Test Selection (RTS) - Live Demo CLI
+
+Usage:
+  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar [options]
+  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar <repoPath> <baseRev> <targetRev> [pairs...] [options]
+  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --repo=<path> --base=<baseRev> --target=<targetRev> [pairs...] [options]
+  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --url=<GIT_URL> [--base=<rev> --target=<rev>] [options]
+  java -jar target/CODE-CHANGE-ANALYSIS-1.0-SNAPSHOT.jar --interactive
+  mvn exec:java [-Dexec.args="<arguments>"]
+
+Modes:
+  1. Zero-Argument Live Demo:
+     Automatically runs regression test selection on the sample repository comparing
+     V4 (a3d0163) -> V5 (268a165).
+     Sample repository is resolved in order:
+       a. System property   : -Drts.sample=<path>
+       b. Environment var   : RTS_SAMPLE_PROJECT=<path>
+       c. Fallback default  : D:/PROJECT/SAMPLE-PROJECT/sample-project
+
+  2. Custom Repository Analysis:
+     <repoPath> <baseRev> <targetRev> [<sourceFile=testFile>...]
+     or --repo=<path> --base=<baseRev> --target=<targetRev> [pairs...]
+     Analyzes code changes between two Git commits and selects affected tests.
+     If no sourceFile=testFile pairs are given, they are auto-discovered.
+     Running this without --execute prints the full report: Git diff (A/M/D),
+     changed/impacted members, selected tests and a consolidated final report.
+
+  3. Remote Git Repository (Repository-Independent Workflow):
+     --url=<GIT_URL> [--base=<rev> --target=<rev>] [--generate] [--execute --yes]
+     Clones the repository into a dedicated temporary workspace and runs the
+     complete pipeline: classify files, detect Java changes, build the dependency
+     graph, analyse impact, select and generate tests, execute them in an isolated
+     checkout and verify the results with Maven Surefire.
+     The remote repository and any local clone are never modified or pushed to.
+
+  4. Interactive Session:
+     --interactive (also started automatically when run with no arguments on a
+     real terminal) prompts for a Git repository URL and offers the operations
+     menu (analyze / select / generate / execute / full workflow / exit).
+
+Options:
+  --url=<GIT_URL>        Git repository URL (https/ssh/git/file, or user@host:path).
+  --interactive          Start the interactive repository workflow.
+  --yes                  Confirm execution of build scripts/tests from a remote repository.
+  --execute              Run both the full test suite and the selected tests in an isolated
+                         temporary checkout via Maven to measure test and time reduction.
+  --max-depth=<n|-1>     Cap impact traversal call hops (-1 for unlimited, default: -1).
+  --timeout=<ms>         Timeout for isolated Maven test runs (default: 300000 ms).
+  --generated=<dir>      Include generated tests from the specified output directory.
+  --generate             Generate tests for the target revision and use them in the analysis.
+                         Selected generated tests are run in the isolated checkout when
+                         combined with --execute.
+  --out=<dir>            Where --generate writes its suite (default: generated-tests).
+  -v, --version          Print version information and exit.
+  -h, --help             Show this help message and exit.
+
+Exit Codes:
+  0 : Success (test selection / execution completed)
+  1 : Invalid arguments or missing sample repository
+  2 : Analysis failed or preflight validation refused repository
+  3 : Test execution failed
+  4 : Repository cloning or network failure
+CODE-CHANGE-ANALYSIS 1.0-SNAPSHOT (Change-Sensitive Regression Test Selection)

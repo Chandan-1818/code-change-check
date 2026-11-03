@@ -1,12 +1,13 @@
 package com.analysis.tool.parser;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public class JavaParserAnalyzerTest {
 
@@ -86,5 +87,59 @@ public class JavaParserAnalyzerTest {
             }
         }
         throw new IllegalArgumentException("No method named '" + name + "' found");
+    }
+
+    /**
+     * The parser is configured for Java 17, so records, text blocks and
+     * switch expressions must be accepted (GAP-12).
+     */
+    @Test
+    public void shouldParseJava17LanguageFeatures() {
+        String source =
+                "package com.sample;\n" +
+                "\n" +
+                "public class Java17Features {\n" +
+                "\n" +
+                "    public record Point(int x, int y) {\n" +
+                "    }\n" +
+                "\n" +
+                "    public String textBlock() {\n" +
+                "        return \"\"\"\n" +
+                "                hello\n" +
+                "                \"\"\";\n" +
+                "    }\n" +
+                "\n" +
+                "    public String switchExpression(int day) {\n" +
+                "        return switch (day) {\n" +
+                "            case 1 -> \"mon\";\n" +
+                "            default -> \"other\";\n" +
+                "        };\n" +
+                "    }\n" +
+                "}\n";
+
+        JavaParserAnalyzer analyzer = new JavaParserAnalyzer();
+
+        List<String> methodNames = analyzer.extractMethodNames(source);
+
+        assertTrue(methodNames.contains("textBlock"),
+                "Expected the text-block method to be extracted");
+        assertTrue(methodNames.contains("switchExpression"),
+                "Expected the switch-expression method to be extracted");
+    }
+
+    /**
+     * Unparseable source must surface as the typed SourceParseException
+     * (wrapping JavaParser's ParseProblemException), not crash the caller
+     * with an unrelated runtime exception.
+     */
+    @Test
+    public void shouldThrowTypedSourceParseExceptionOnUnparseableSource() {
+        JavaParserAnalyzer analyzer = new JavaParserAnalyzer();
+
+        SourceParseException exception = assertThrows(SourceParseException.class,
+                () -> analyzer.extractMethodNames("public class Broken { this is not java"));
+
+        assertNotNull(exception.getCause(),
+                "Expected the typed exception to wrap the underlying parse problem");
     }
 }
